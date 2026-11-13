@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Django: runserver",
+      "type": "shell",
+      "command": "${workspaceFolder}\\tutors\\runserver.bat",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "django",
+        "pattern": {
+          "regexp": ".*"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Starting development server at",
+          "endsPattern": "Starting development server at"
+        }
+      }
+    }
+  ]
+}

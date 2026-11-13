@@ -1,0 +1,99 @@
+{
+  "id": "/",
+  "name": "AI Resume Builder — 120+ Templates",
+  "short_name": "AI Resume",
+  "description": "Template-first AI Resume Builder with 120+ ATS-friendly templates, step-by-step role-specific AI assistant, and instant PDF export.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "categories": [
+    "productivity",
+    "business",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "120+ Templates",
+      "short_name": "Templates",
+      "description": "Browse 120+ ATS-friendly resume templates",
+      "url": "/?screen=gallery",
+      "icons": [
+        {
+          "src": "/pwa-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "AI Resume Editor",
+      "short_name": "Editor",
+      "description": "Step-by-step role-specific AI resume assistant",
+      "url": "/?screen=assistant",
+      "icons": [
+        {
+          "src": "/pwa-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "ATS Score Check",
+      "short_name": "ATS Check",
+      "description": "Test ATS score, keyword density, and formatting",
+      "url": "/?action=ats",
+      "icons": [
+        {
+          "src": "/pwa-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Saved Cloud Resumes",
+      "short_name": "Cloud Resumes",
+      "description": "View and manage your saved resumes",
+      "url": "/?action=cloud",
+      "icons": [
+        {
+          "src": "/pwa-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/?action=share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

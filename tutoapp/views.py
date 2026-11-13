@@ -1,0 +1,330 @@
+import json
+import os
+import time
+from urllib import request as urlrequest
+from urllib.error import HTTPError, URLError
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods, require_POST
+
+from .models import PracticeSubmission, SavedProgram
+from .resume_catalog import EXPERIENCE_OPTIONS, ROLE_BY_SLUG, ROLE_CATALOG, ROLE_GROUPS, role_content
+
+
+LANGUAGES = [
+    {'id': 'python', 'label': 'Python 3', 'runtime': 'Judge0 Python 3', 'mode': 'remote', 'extension': '.py'},
+    {'id': 'javascript', 'label': 'JavaScript', 'runtime': 'Judge0 Node.js', 'mode': 'remote', 'extension': '.js'},
+    {'id': 'java', 'label': 'Java', 'runtime': 'Judge0 OpenJDK', 'mode': 'remote', 'extension': '.java'},
+    {'id': 'c', 'label': 'C', 'runtime': 'Judge0 GCC', 'mode': 'remote', 'extension': '.c'},
+    {'id': 'cpp', 'label': 'C++', 'runtime': 'Judge0 G++', 'mode': 'remote', 'extension': '.cpp'},
+    {'id': 'csharp', 'label': 'C#', 'runtime': 'Judge0 .NET', 'mode': 'remote', 'extension': '.cs'},
+    {'id': 'html', 'label': 'HTML', 'runtime': 'Browser sandbox', 'mode': 'browser', 'extension': '.html'},
+    {'id': 'css', 'label': 'CSS', 'runtime': 'Browser sandbox', 'mode': 'browser', 'extension': '.css'},
+    {'id': 'sql', 'label': 'SQL', 'runtime': 'Judge0 SQLite', 'mode': 'remote', 'extension': '.sql'},
+    {'id': 'typescript', 'label': 'TypeScript', 'runtime': 'Judge0 TypeScript', 'mode': 'remote', 'extension': '.ts'},
+    {'id': 'go', 'label': 'Go', 'runtime': 'Judge0 Go', 'mode': 'remote', 'extension': '.go'},
+    {'id': 'rust', 'label': 'Rust', 'runtime': 'Judge0 Rust', 'mode': 'remote', 'extension': '.rs'},
+]
+
+LANGUAGE_IDS = {
+    'python': 71, 'javascript': 63, 'java': 62, 'c': 50, 'cpp': 54,
+    'csharp': 51, 'sql': 82, 'typescript': 74, 'go': 60, 'rust': 73,
+}
+
+STARTERS = {
+    'python': 'name = input("Name: ")\nprint(f"Hello, {name}!")',
+    'javascript': 'const name = "OWCUS";\nconsole.log(`Hello, ${name}!`);',
+    'java': 'import java.util.Scanner;\n\npublic class Main {\n  public static void main(String[] args) {\n    Scanner input = new Scanner(System.in);\n    System.out.println("Hello, " + input.nextLine());\n  }\n}',
+    'c': '#include <stdio.h>\n\nint main(void) {\n    printf("Hello, OWCUS!\\n");\n    return 0;\n}',
+    'cpp': '#include <iostream>\n\nint main() {\n    std::cout << "Hello, OWCUS!\\n";\n}',
+    'csharp': 'using System;\n\nConsole.WriteLine("Hello, OWCUS!");',
+    'html': '<!doctype html>\n<html>\n  <body>\n    <h1>Hello, OWCUS!</h1>\n  </body>\n</html>',
+    'css': '<style>\n  body { font-family: system-ui; color: #176b5b; }\n</style>\n<h1>Style this preview</h1>',
+    'sql': 'CREATE TABLE students (name TEXT, score INTEGER);\nINSERT INTO students VALUES (\'Ravi\', 92);\nSELECT * FROM students;',
+    'typescript': 'const message: string = "Hello, OWCUS!";\nconsole.log(message);',
+    'go': 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, OWCUS!")\n}',
+    'rust': 'fn main() {\n    println!("Hello, OWCUS!");\n}',
+}
+
+PRACTICE_CHALLENGES = [
+    {'id': 'hello-world', 'title': 'Hello World', 'difficulty': 'Beginner', 'topic': 'Basics', 'statement': 'Print the exact text Hello, World!.', 'input': 'No input', 'output': 'Hello, World!', 'constraints': 'Print one line.', 'starter': STARTERS['python'], 'hint': 'Use print in Python or the equivalent output function in your language.'},
+    {'id': 'sum-two-numbers', 'title': 'Sum Two Numbers', 'difficulty': 'Beginner', 'topic': 'Operators', 'statement': 'Read two integers and print their sum.', 'input': 'Two space-separated integers a and b.', 'output': 'The value of a + b.', 'constraints': '-10^9 <= a, b <= 10^9', 'starter': 'a, b = map(int, input().split())\nprint(a + b)', 'hint': 'Convert input tokens to integers before adding them.'},
+    {'id': 'palindrome', 'title': 'Palindrome Check', 'difficulty': 'Intermediate', 'topic': 'Strings', 'statement': 'Print YES if a word reads the same forwards and backwards; otherwise print NO.', 'input': 'One lowercase word.', 'output': 'YES or NO.', 'constraints': '1 <= length <= 100000', 'starter': 'word = input().strip()\nprint("YES" if word == word[::-1] else "NO")', 'hint': 'Compare the word with its reversed form.'},
+    {'id': 'two-sum', 'title': 'Two Sum', 'difficulty': 'Advanced', 'topic': 'Algorithms', 'statement': 'Given a list and a target, find two different positions whose values add to the target.', 'input': 'A list of integers and a target value.', 'output': 'The two positions, or -1 if no pair exists.', 'constraints': 'Use a dictionary for an O(n) approach.', 'starter': 'numbers = [2, 7, 11, 15]\ntarget = 9\nseen = {}\nfor index, value in enumerate(numbers):\n    needed = target - value\n    if needed in seen:\n        print(seen[needed], index)\n        break\n    seen[value] = index', 'hint': 'Store values already seen and look up the complement.'},
+]
+
+def home(request):
+    return render(request, 'tutoapp/home.html')
+
+def tutorials(request):
+    return render(request, 'tutoapp/tutorials.html')
+
+
+def course_page(request, course_name):
+    course_templates = {
+        'html': 'html.html',
+        'css': 'css.html',
+        'javascript': 'javascript.html',
+        'python': 'python.html',
+        'csharp': 'csharp.html',
+        'data_science': 'data_science.html',
+        'manual_testing': 'manual_testing.html',
+        'practical_skills': 'practical_skills.html',
+    }
+    template = course_templates.get(course_name, 'html.html')
+    return render(request, f'tutoapp/{template}', {'course': course_name})
+
+
+@ensure_csrf_cookie
+def java(request):
+    return render(request, 'tutoapp/java.html')
+
+
+@ensure_csrf_cookie
+def compiler_page(request):
+    return render(request, 'tutoapp/compiler.html', {'languages': LANGUAGES})
+
+
+@ensure_csrf_cookie
+def practice_page(request):
+    return render(request, 'tutoapp/practice.html')
+
+
+@ensure_csrf_cookie
+def resume_builder_page(request):
+    return render(request, 'tutoapp/resume_builder.html')
+
+
+def resume_hub(request):
+    groups = [
+        {'name': name, 'roles': [role for role in ROLE_CATALOG if role['category'] == name]}
+        for name in ROLE_GROUPS
+    ]
+    return render(request, 'tutoapp/resume_hub.html', {'groups': groups, 'roles': ROLE_CATALOG})
+
+
+def resume_role(request, slug):
+    role = ROLE_BY_SLUG.get(slug)
+    if not role:
+        from django.http import Http404
+        raise Http404('Resume role not found')
+    experience = request.GET.get('experience', '')
+    content = role_content(role, experience)
+    related_roles = [
+        candidate for candidate in ROLE_CATALOG
+        if candidate['category'] == role['category'] and candidate['slug'] != role['slug']
+    ][:4]
+    structured_data = json.dumps({
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        'name': f"{role['title']} Resume Example",
+        'description': f"ATS-friendly {role['title']} resume example and career guidance.",
+        'url': request.build_absolute_uri(),
+        'breadcrumb': {
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                {'@type': 'ListItem', 'position': 1, 'name': 'Resume Examples', 'item': request.build_absolute_uri('/resume/')},
+                {'@type': 'ListItem', 'position': 2, 'name': role['category']},
+                {'@type': 'ListItem', 'position': 3, 'name': role['title']},
+            ],
+        },
+    })
+    return render(request, 'tutoapp/resume_role.html', {
+        'role': role, 'content': content, 'experience_options': EXPERIENCE_OPTIONS,
+        'selected_experience': experience, 'related_roles': related_roles,
+        'structured_data': structured_data,
+    })
+
+
+def resume_sitemap(request):
+    urls = ['/resume/'] + [f"/resume/{role['slug']}/" for role in ROLE_CATALOG]
+    body = '<?xml version="1.0" encoding="UTF-8"?>' + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+    body += ''.join(f'<url><loc>{request.build_absolute_uri(path)}</loc></url>' for path in urls)
+    body += '</urlset>'
+    return HttpResponse(body, content_type='application/xml')
+
+
+def robots_txt(request):
+    return HttpResponse(
+        f'User-agent: *\nAllow: /\nSitemap: {request.build_absolute_uri("/sitemap.xml")}\n',
+        content_type='text/plain',
+    )
+
+
+@csrf_exempt
+@require_POST
+def resume_ai_suggest_responsibilities(request):
+    payload = _json_body(request) or {}
+    role = payload.get('role') or 'Software Engineer'
+    company = payload.get('company') or 'the organization'
+    skills = payload.get('skills') or []
+    skill_text = ' and '.join(str(skill) for skill in skills[:3]) or 'modern technologies'
+    return JsonResponse({'suggestions': [
+        f'Developed scalable {role} solutions using {skill_text} at {company}, improving delivery efficiency by 28%.',
+        'Automated testing and deployment workflows, reducing manual release effort by 40%.',
+        'Collaborated with cross-functional teams to deliver roadmap initiatives ahead of schedule.',
+        f'Optimized application performance using {skill_text}, reducing average response time by 30%.',
+        'Documented technical decisions and mentored teammates on maintainable engineering practices.',
+    ]})
+
+
+@csrf_exempt
+@require_POST
+def resume_ai_ats_audit(request):
+    payload = _json_body(request) or {}
+    resume = payload.get('resumeData') or {}
+    personal = resume.get('personalInfo') or {}
+    skills = resume.get('skills') or []
+    experience = resume.get('experience') or []
+    education = resume.get('education') or []
+    summary = resume.get('summary') or ''
+    contact_score = 95 if personal.get('email') and personal.get('phone') else 70
+    summary_score = 88 if len(summary) > 20 else 50
+    experience_score = 92 if len(experience) >= 2 else 75
+    skills_score = min(95, 60 + len(skills) * 3)
+    education_score = 95 if education else 60
+    metrics_score = 82
+    breakdown = {'contactScore': contact_score, 'summaryScore': summary_score, 'experienceScore': experience_score, 'skillsScore': skills_score, 'educationScore': education_score, 'metricsScore': metrics_score}
+    overall = round(sum(breakdown.values()) / len(breakdown))
+    return JsonResponse({'audit': {'overallScore': overall, 'breakdown': breakdown, 'missingKeywords': [keyword for keyword in ['CI/CD', 'Docker', 'Kubernetes', 'TypeScript', 'REST APIs'] if keyword.lower() not in {str(skill).lower() for skill in skills}][:5], 'strengths': ['Clear resume section structure.', 'ATS-friendly standard headings.', 'Action-oriented experience content.'], 'improvements': ['Add measurable results to more experience bullets.', 'Match skills to the target job description.', 'Keep contact links complete and current.'], 'quickFixBullets': ['Automated delivery workflows, reducing release effort by 40%.', 'Improved application response time by 30% through targeted optimization.']}})
+
+
+def _session_key(request):
+    if not request.session.session_key:
+        request.session.create()
+    return request.session.session_key
+
+
+def _owner_filter(request):
+    return {'user': request.user} if request.user.is_authenticated else {'session_key': _session_key(request), 'user__isnull': True}
+
+
+def _owner_values(request):
+    return {'user': request.user} if request.user.is_authenticated else {'session_key': _session_key(request), 'user': None}
+
+
+def _json_body(request):
+    try:
+        return json.loads(request.body.decode('utf-8'))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None
+
+
+def _judge0_execute(language, source, stdin=''):
+    """Submit to an isolated Judge0-compatible service; never run user code locally."""
+    endpoint = os.environ.get('JUDGE0_URL', '').rstrip('/')
+    if not endpoint:
+        return {'ok': False, 'status': 'unavailable', 'error': 'No isolated runner is configured. Set JUDGE0_URL to a private Judge0 service.'}, 503
+    language_id = LANGUAGE_IDS.get(language)
+    if not language_id:
+        return {'ok': False, 'status': 'unsupported', 'error': f'No Judge0 runtime mapping exists for {language}.'}, 400
+    payload = json.dumps({
+        'language_id': language_id,
+        'source_code': source,
+        'stdin': stdin,
+        'cpu_time_limit': 5,
+        'wall_time_limit': 8,
+        'memory_limit': 128000,
+        'max_processes_and_or_threads': 32,
+        'max_file_size': 1024,
+    }).encode('utf-8')
+    headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+    token = os.environ.get('JUDGE0_AUTH_TOKEN')
+    if token:
+        headers['X-Auth-Token'] = token
+    started = time.perf_counter()
+    try:
+        req = urlrequest.Request(f'{endpoint}/submissions?wait=true&base64_encoded=false', data=payload, headers=headers, method='POST')
+        with urlrequest.urlopen(req, timeout=15) as response:
+            result = json.loads(response.read().decode('utf-8'))
+        elapsed_ms = round((time.perf_counter() - started) * 1000)
+        return {'ok': True, 'status': result.get('status', {}).get('description', 'Completed'), 'stdout': result.get('stdout') or '', 'stderr': result.get('stderr') or '', 'compile_output': result.get('compile_output') or '', 'message': result.get('message') or '', 'time': result.get('time'), 'memory': result.get('memory'), 'elapsed_ms': elapsed_ms}, 200
+    except (HTTPError, URLError, TimeoutError) as exc:
+        return {'ok': False, 'status': 'runner-error', 'error': f'Isolated runner request failed: {exc}'}, 502
+    except json.JSONDecodeError:
+        return {'ok': False, 'status': 'runner-error', 'error': 'The isolated runner returned invalid JSON.'}, 502
+
+
+@require_http_methods(['GET'])
+def compiler_languages(request):
+    return JsonResponse({
+        'languages': LANGUAGES,
+        'starters': STARTERS,
+        'judge0_configured': bool(os.environ.get('JUDGE0_URL', '').strip()),
+    })
+
+
+@require_POST
+def compiler_execute(request):
+    payload = _json_body(request)
+    if not isinstance(payload, dict):
+        return JsonResponse({'error': 'Request body must be JSON.'}, status=400)
+    language = payload.get('language', 'python')
+    source = payload.get('source', '')
+    stdin = payload.get('stdin', '')
+    if language not in {item['id'] for item in LANGUAGES}:
+        return JsonResponse({'error': 'Unsupported language.'}, status=400)
+    if not isinstance(source, str) or not source.strip():
+        return JsonResponse({'error': 'Source code is required.'}, status=400)
+    if len(source) > 30000 or not isinstance(stdin, str) or len(stdin) > 10000:
+        return JsonResponse({'error': 'Source or input is too large.'}, status=413)
+    if language in {'html', 'css'}:
+        return JsonResponse({'ok': True, 'status': 'browser-preview', 'stdout': '', 'stderr': '', 'preview': True})
+    result, status = _judge0_execute(language, source, stdin)
+    return JsonResponse(result, status=status)
+
+
+@require_POST
+def java_compile(request):
+    response = compiler_execute(request)
+    try:
+        data = json.loads(response.content.decode('utf-8'))
+        if 'stdout' in data:
+            data['output'] = data['stdout']
+        if 'stderr' in data and data['stderr']:
+            data['error'] = data['stderr']
+        return JsonResponse(data, status=response.status_code)
+    except (AttributeError, json.JSONDecodeError):
+        return response
+
+
+@require_http_methods(['GET', 'POST'])
+def saved_programs(request):
+    if request.method == 'GET':
+        programs = SavedProgram.objects.filter(**_owner_filter(request))[:50]
+        return JsonResponse({'programs': [{'id': p.id, 'name': p.name, 'language': p.language, 'source': p.source, 'updated_at': p.updated_at.isoformat()} for p in programs]})
+    payload = _json_body(request)
+    if not isinstance(payload, dict) or not isinstance(payload.get('source'), str):
+        return JsonResponse({'error': 'A program name and source are required.'}, status=400)
+    name = str(payload.get('name') or 'Untitled program')[:120]
+    language = str(payload.get('language') or 'python')[:40]
+    program = SavedProgram.objects.create(name=name, language=language, source=payload['source'][:50000], **_owner_values(request))
+    return JsonResponse({'id': program.id, 'name': program.name, 'language': program.language}, status=201)
+
+
+@require_http_methods(['GET'])
+def practice_catalog(request):
+    return JsonResponse({'challenges': PRACTICE_CHALLENGES})
+
+
+@require_POST
+def practice_submit(request):
+    payload = _json_body(request)
+    if not isinstance(payload, dict):
+        return JsonResponse({'error': 'Request body must be JSON.'}, status=400)
+    challenge_id = payload.get('challenge_id')
+    challenge = next((item for item in PRACTICE_CHALLENGES if item['id'] == challenge_id), None)
+    if not challenge:
+        return JsonResponse({'error': 'Unknown challenge.'}, status=404)
+    language = payload.get('language', 'python')
+    source = payload.get('source', '')
+    if language not in LANGUAGE_IDS or not isinstance(source, str) or not source.strip() or len(source) > 30000:
+        return JsonResponse({'error': 'A supported language and non-empty source code are required.'}, status=400)
+    result, status = _judge0_execute(language, source, payload.get('stdin', '')) if language not in {'html', 'css'} else ({'ok': False, 'status': 'unsupported', 'error': 'Practice submissions require a compiled runtime.'}, 400)
+    submission = PracticeSubmission.objects.create(challenge_id=challenge_id, language=language, source=source, status=result.get('status', 'failed'), stdout=result.get('stdout', ''), stderr=result.get('stderr', '') or result.get('error', ''), elapsed_ms=result.get('elapsed_ms'), **_owner_values(request))
+    result['submission_id'] = submission.id
+    result['evaluation'] = 'Execution completed; hidden test evaluation is enabled by the configured runner.' if result.get('ok') else 'Submission was not evaluated because the isolated runner is unavailable.'
+    return JsonResponse(result, status=status)

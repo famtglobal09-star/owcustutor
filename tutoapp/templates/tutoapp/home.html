@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore Owcus tutorials with guided chapters, examples, and practical lessons.">
+  <title>Explore Owcus Tutorials</title>
+<link rel="stylesheet" href="{% static 'tutoapp/landing.css' %}">
+<link rel="stylesheet" href="{% static 'tutoapp/landing-polish.css' %}">
+<link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}">
+<style>.card-java .card-visual{background:linear-gradient(135deg,#c85b2c,#352335)}</style>
+</head>
+<body>
+  <header class="landing-header">
+    <a class="brand" href="/"><span class="brand-mark">o</span><span>owcus</span></a>
+    {% include "tutoapp/site_nav.html" %}
+    <a class="header-link" href="/tutorials/#overview">Open tutorial workspace <span>↗</span></a>
+  </header>
+  <main class="landing-shell">
+    <section class="landing-intro">
+      <p class="eyebrow">Owcus learning library</p>
+      <h1>Explore Owcus Tutorials</h1>
+      <p>Choose a course to view its chapters, examples and practical lessons.</p>
+      <label class="search-wrap" for="course-search"><span>⌕</span><input id="course-search" type="search" placeholder="Search courses..." autocomplete="off"></label>
+    </section>
+    <section class="course-section" aria-labelledby="programming-title">
+      <div class="section-title"><h2 id="programming-title">Programming &amp; Web Development</h2><span class="course-count" id="course-count">9 courses</span></div>
+      <div class="course-grid" id="course-grid">
+        <a class="course-card card-html" data-course="html structure" href="/tutorials/#overview"><div class="card-visual"><span class="course-icon">&lt;/&gt;</span><span class="visual-title">HTML STRUCTURE</span><span class="rings"></span></div><div class="card-copy"><h3>HTML</h3><p>View chapters and lessons</p></div></a>
+        <a class="course-card card-python" data-course="python code" href="/tutorials/#py-overview"><div class="card-visual"><span class="course-icon text-icon">Py</span><span class="visual-title">PYTHON CODE</span><span class="rings"></span></div><div class="card-copy"><h3>Python</h3><p>View chapters and lessons</p></div></a>
+        <a class="course-card card-java" data-course="java programming object oriented" href="/java/#j0-0"><div class="card-visual"><span class="course-icon text-icon">J</span><span class="visual-title">JAVA DEVELOPMENT</span><span class="rings"></span></div><div class="card-copy"><h3>Java</h3><p>View chapters and lessons</p></div></a>
+        <a class="course-card card-js" data-course="javascript js web" href="/tutorials/#js-overview"><div class="card-visual"><span class="course-icon text-icon">JS</span><span class="visual-title">JAVASCRIPT</span><span class="rings"></span></div><div class="card-copy"><h3>JavaScript</h3><p>View chapters and lessons</p></div></a>
+        <a class="course-card card-css" data-course="css design styles" href="/tutorials/#css-overview"><div class="card-visual"><span class="course-icon">{ }</span><span class="visual-title">CSS DESIGN</span><span class="rings"></span></div><div class="card-copy"><h3>CSS</h3><p>View chapters and lessons</p></div></a>
+        <a class="course-card card-csharp" data-course="c sharp c# dotnet" href="/tutorials/#cs-overview"><div class="card-visual"><span class="course-icon text-icon">C#</span><span class="visual-title">C# DEVELOPMENT</span><span class="rings"></span></div><div class="card-copy"><h3>C#</h3><p>View chapters and lessons</p></div></a>
+        <a class="course-card card-data" data-course="data science numpy pandas" href="/tutorials/#ds-overview"><div class="card-visual"><span class="course-icon">∑</span><span class="visual-title">DATA SCIENCE</span><span class="rings"></span></div><div class="card-copy"><h3>Data Science</h3><p>View chapters and lessons</p></div></a>
+        <a class="course-card card-testing" data-course="manual testing qa software" href="/tutorials/#mt-overview"><div class="card-visual"><span class="course-icon">✓</span><span class="visual-title">MANUAL TESTING</span><span class="rings"></span></div><div class="card-copy"><h3>Manual Testing</h3><p>View chapters and lessons</p></div></a>
+        <a class="course-card card-tools" data-course="programming tools practice" href="/tutorials/#overview"><div class="card-visual"><span class="course-icon">✦</span><span class="visual-title">PRACTICAL SKILLS</span><span class="rings"></span></div><div class="card-copy"><h3>Practical Skills</h3><p>View chapters and lessons</p></div></a>
+      </div>
+      <p class="empty-state" id="empty-state" hidden>No courses match your search.</p>
+    </section>
+  </main>
+  <section class="home-about" aria-labelledby="resume-library-title">
+    <div><p class="eyebrow">Career toolkit</p><h2 id="resume-library-title">Find Your Perfect Resume</h2></div>
+    <p>Browse professional resume examples by job role, industry and experience, then customize the result in the OWCUS Resume Builder.</p>
+    <a class="primary-button" href="/resume/">Explore resume examples <span>→</span></a>
+  </section>
+  <section class="home-about" id="about" aria-labelledby="about-title">
+    <div><p class="eyebrow">A better way to learn</p><h2 id="about-title">Learn one idea.<br><em>Build something real.</em></h2></div>
+    <p>Every course is organized into guided chapters, runnable examples, expected outputs, and practical exercises so you can move from reading to doing with confidence.</p>
+    <a class="primary-button" href="/tutorials/#overview">Browse all courses <span>→</span></a>
+  </section>
+  <footer class="landing-footer"><span>Learn with purpose. Build with confidence.</span><span>© Owcus Tutorials</span></footer>
+  <script>
+    document.querySelector('[data-course="html structure"]')?.setAttribute('href','/html/');
+    document.querySelector('[data-course="python code"]')?.setAttribute('href','/python/');
+    document.querySelector('[data-course="javascript js web"]')?.setAttribute('href','/javascript/');
+    document.querySelector('[data-course="css design styles"]')?.setAttribute('href','/css/');
+    document.querySelector('[data-course="c sharp c# dotnet"]')?.setAttribute('href','/csharp/');
+    document.querySelector('[data-course="data science numpy pandas"]')?.setAttribute('href','/data-science/');
+    document.querySelector('[data-course="manual testing qa software"]')?.setAttribute('href','/manual-testing/');
+    document.querySelector('[data-course="programming tools practice"]')?.setAttribute('href','/practical-skills/');
+  </script>
+  <script src="{% static 'tutoapp/landing.js' %}"></script>
+  <script src="{% static 'tutoapp/site-nav.js' %}"></script>
+</body>
+</html>

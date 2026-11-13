@@ -1,0 +1,30 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OWCUS Coding Practice</title>
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}">
+  <link rel="stylesheet" href="{% static 'tutoapp/practice.css' %}">
+</head>
+<body class="practice-page">
+  <header class="landing-header practice-header"><a class="brand" href="/"><span class="brand-mark">o</span><span>owcus</span></a>{% include "tutoapp/site_nav.html" %}</header>
+  <main class="practice-shell">
+    <section class="practice-hero"><p class="eyebrow">OWCUS Coding Practice</p><h1>Turn lessons into solved problems.</h1><p>Choose a challenge, read the constraints, write a solution, and submit it through the isolated runner.</p></section>
+    <section class="practice-layout">
+      <aside class="challenge-sidebar"><div class="filter-row"><label for="difficulty-filter">Difficulty</label><select id="difficulty-filter"><option value="all">All levels</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div><label for="topic-filter">Topic</label><select id="topic-filter"><option value="all">All topics</option></select><div id="challenge-list" class="challenge-list"></div></aside>
+      <section class="challenge-workspace" id="interview">
+        <div id="challenge-meta" class="challenge-meta"><span>Select a challenge</span></div>
+        <h2 id="challenge-title">Choose a challenge</h2><p id="challenge-statement">Select a problem from the left to begin.</p>
+        <div class="challenge-grid"><div><h3>Input</h3><pre id="challenge-input">—</pre></div><div><h3>Expected output</h3><pre id="challenge-output">—</pre></div><div><h3>Constraints</h3><pre id="challenge-constraints">—</pre></div></div>
+        <div class="practice-actions"><label for="practice-language">Language</label><select id="practice-language"><option value="python">Python 3</option><option value="javascript">JavaScript</option><option value="java">Java</option><option value="c">C</option><option value="cpp">C++</option></select><button id="run-solution" class="primary" type="button">Run Code</button><button id="submit-solution" type="button">Submit Solution</button><button id="reset-solution" type="button">Reset</button></div>
+        <textarea id="practice-editor" spellcheck="false" aria-label="Practice solution"></textarea>
+        <div class="practice-result"><strong id="result-title">Result</strong><pre id="result-output">Run or submit your solution to see the result.</pre></div>
+        <details class="hint-box"><summary>Hint</summary><p id="challenge-hint">Choose a challenge to see a hint.</p></details>
+        <p class="runner-note">Submissions are evaluated only when a Judge0-compatible isolated runner is configured with <code>JUDGE0_URL</code>. This page never executes arbitrary code inside the Django application process.</p>
+      </section>
+    </section>
+  </main>
+  <script src="{% static 'tutoapp/site-nav.js' %}"></script><script src="{% static 'tutoapp/practice.js' %}"></script>
+</body>
+</html>

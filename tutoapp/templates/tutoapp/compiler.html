@@ -1,0 +1,70 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OWCUS Code Playground</title>
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}">
+  <link rel="stylesheet" href="{% static 'tutoapp/compiler.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+</head>
+<body class="compiler-page">
+  <header class="landing-header compiler-header">
+    <a class="brand" href="/"><span class="brand-mark">o</span><span>owcus</span></a>
+    {% include "tutoapp/site_nav.html" %}
+  </header>
+  <main class="compiler-shell">
+    <section class="compiler-hero">
+      <p class="eyebrow">OWCUS Code Playground</p>
+      <h1>Write, run, and learn in one place.</h1>
+      <p>Choose a language, edit a complete program, provide standard input, and inspect the real execution result.</p>
+    </section>
+    <section class="compiler-layout" aria-label="Online compiler">
+      <aside class="compiler-sidebar">
+        <label for="language-select">Language</label>
+        <select id="language-select"></select>
+        <p id="runtime-note" class="runtime-note"></p>
+        <div class="sidebar-heading"><span>Saved programs</span><button id="refresh-saved" type="button">Refresh</button></div>
+        <div id="saved-programs" class="saved-programs"><p class="muted">No saved programs yet.</p></div>
+      </aside>
+      <section class="compiler-panel" id="compiler-panel">
+        <div class="editor-toolbar">
+          <div><strong id="file-name">main.py</strong><span id="execution-status" class="status">Ready</span></div>
+          <div class="toolbar-actions">
+            <button id="run-code" class="primary" type="button">Run code <kbd>Ctrl</kbd><kbd>Enter</kbd></button>
+            <button id="reset-code" type="button">Reset</button>
+            <button id="save-code" type="button">Save</button>
+            <button id="download-code" type="button">Download</button>
+            <button id="copy-code" type="button">Copy</button>
+            <button id="format-code" type="button">Format</button>
+            <button id="maximize-panel" type="button" aria-label="Maximize editor">⛶</button>
+            <button id="minimize-panel" type="button" aria-label="Minimize editor">—</button>
+          </div>
+        </div>
+        <div class="editor-wrap">
+          <textarea id="code-editor" spellcheck="false" aria-label="Source code"></textarea>
+        </div>
+        <div class="io-tabs" role="tablist">
+          <button class="io-tab active" data-tab="output" role="tab">Output</button>
+          <button class="io-tab" data-tab="errors" role="tab">Errors</button>
+          <button class="io-tab" data-tab="input" role="tab">Standard input</button>
+        </div>
+        <div class="io-panels">
+          <pre id="output-panel" class="io-panel active" data-panel="output">Run your program to see output here.</pre>
+          <pre id="errors-panel" class="io-panel" data-panel="errors">No errors.</pre>
+          <textarea id="input-panel" class="io-panel" data-panel="input" placeholder="Input sent to the program, one value per line..."></textarea>
+        </div>
+        <div class="preview-wrap" id="preview-wrap" hidden>
+          <div class="preview-heading"><strong>Browser preview</strong><button id="clear-preview" type="button">Clear</button></div>
+          <iframe id="preview-frame" title="Sandboxed browser preview" sandbox="allow-scripts"></iframe>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="{% static 'tutoapp/site-nav.js' %}"></script>
+  <script src="{% static 'tutoapp/compiler.js' %}"></script>
+</body>
+</html>

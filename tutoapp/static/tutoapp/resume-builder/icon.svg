@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="50%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#1e1b4b" />
+    </linearGradient>
+    <linearGradient id="sheet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f1f5f9" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-opacity="0.35" flood-color="#0f172a" />
+    </filter>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+
+  <!-- Sheet Shadow & Document -->
+  <g filter="url(#shadow)">
+    <!-- Main Resume Page -->
+    <rect x="116" y="86" width="280" height="340" rx="20" fill="url(#sheet)" />
+
+    <!-- Document Fold / Top Right Accent -->
+    <path d="M336 86 L396 146 L336 146 Z" fill="#cbd5e1" opacity="0.9" />
+
+    <!-- Header Avatar & Info Lines -->
+    <circle cx="166" cy="146" r="22" fill="#3b82f6" />
+    <rect x="202" y="132" width="110" height="12" rx="6" fill="#1e293b" />
+    <rect x="202" y="150" width="70" height="8" rx="4" fill="#64748b" />
+
+    <!-- Content Lines -->
+    <rect x="146" y="196" width="220" height="8" rx="4" fill="#0284c7" />
+    <rect x="146" y="214" width="180" height="6" rx="3" fill="#94a3b8" />
+    <rect x="146" y="228" width="210" height="6" rx="3" fill="#cbd5e1" />
+    <rect x="146" y="242" width="150" height="6" rx="3" fill="#cbd5e1" />
+
+    <!-- Experience Section Block -->
+    <rect x="146" y="268" width="220" height="8" rx="4" fill="#6366f1" />
+    <rect x="146" y="286" width="190" height="6" rx="3" fill="#94a3b8" />
+    <rect x="146" y="300" width="200" height="6" rx="3" fill="#cbd5e1" />
+    <rect x="146" y="314" width="160" height="6" rx="3" fill="#cbd5e1" />
+
+    <!-- Skills Badges -->
+    <rect x="146" y="342" width="50" height="14" rx="7" fill="#dbeafe" />
+    <rect x="204" y="342" width="60" height="14" rx="7" fill="#e0e7ff" />
+    <rect x="272" y="342" width="54" height="14" rx="7" fill="#dbeafe" />
+  </g>
+
+  <!-- AI Sparkle Badge Bottom Right -->
+  <g transform="translate(340, 340)">
+    <circle cx="36" cy="36" r="44" fill="#3b82f6" stroke="#ffffff" stroke-width="6" />
+    <path d="M36 14 L42 28 L56 34 L42 40 L36 54 L30 40 L16 34 L30 28 Z" fill="#fbbf24" />
+    <circle cx="50" cy="20" r="4" fill="#fef08a" />
+  </g>
+</svg>

@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OWCUS AI Resume Builder – 200+ Role Templates</title>
+  <meta name="description" content="Create an ATS-friendly resume with 200+ job-role templates, experience variations, guided writing, ATS checks and PDF export.">
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}">
+    <link rel="stylesheet" href="{% static 'tutoapp/resume-builder/assets/index-uW8WPiUc.css' %}">
+  <style>
+    .resume-builder-header{position:relative;z-index:60;height:54px;display:flex;align-items:center;gap:12px;padding:0 14px;background:#0b7a5a;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+    .resume-builder-header .logo{font:700 20px Georgia,serif;white-space:nowrap}
+    .resume-builder-header .logo span{opacity:.75;font-weight:400;margin-left:6px}
+    .resume-builder-header .site-menu{margin-left:auto}
+    .resume-builder-header .menu-link{color:#fff}
+    .resume-builder-header .menu-link:hover,.resume-builder-header .menu-link:focus-visible{background:rgba(255,255,255,.16);color:#fff}
+    .resume-builder-header .header-link{background:#fff;color:#064e3b}
+    .resume-builder-host{margin:0;min-width:320px;background:#f8fafc}
+    .resume-builder-header .menu-link.active{background:#edf4ff;color:#1d4ed8}
+    @media(max-width:800px){.resume-builder-header{padding:0 12px}.resume-builder-header .site-menu{top:64px}}
+  </style>
+</head>
+<body class="resume-builder-host">
+  <header class="resume-builder-header top">
+    <div class="logo">OWCUS<span>Resume Builder</span></div>
+    {% include "tutoapp/site_nav.html" %}
+  </header>
+  <div id="root"></div>
+  <script src="{% static 'tutoapp/site-nav.js' %}"></script>
+  <script type="module" crossorigin src="{% static 'tutoapp/resume-builder/assets/index-DfCYDLWE.js' %}"></script>
+</body>
+</html>

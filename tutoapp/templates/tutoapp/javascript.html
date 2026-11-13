@@ -1,0 +1,73 @@
+{% with course_name="javascript" course_title="JavaScript Tutorial – Complete Course" course_description="Learn JavaScript with detailed explanations, examples, exercises and interactive practice." %}{% include "tutoapp/course.html" %}{% endwith %}
+<script>
+/* JavaScript lessons use the same structured teaching format as the Java course. */
+(function(){
+  function jsExample(title, code, output, explanation){
+    return '<h3>'+title+'</h3><pre><code>'+esc(code)+'</code></pre><div class="box"><b>Expected output</b><pre>'+esc(output)+'</pre><p>'+explanation+'</p></div>';
+  }
+  function jsDataTypesLesson(){
+    var h='';
+    h+='<div class="crumb">JavaScript · Data Types · Lesson 1</div>';
+    h+='<h1>JavaScript Data Types</h1>';
+    h+='<p><b>JavaScript data types</b> describe the kind of value stored in a variable and the operations that can be performed on it. JavaScript is dynamically typed, so a variable can hold a number at one time and a string later.</p>';
+    h+='<h2>1. What are data types in JavaScript?</h2>';
+    h+='<p>Every JavaScript value has a type. Understanding types helps you choose the correct operators, compare values safely, validate input, and avoid unexpected conversions.</p>';
+    h+=jsExample('Checking a value with typeof','const age = 25;\nconst name = "Ravi";\nconst active = true;\n\nconsole.log(typeof age);\nconsole.log(typeof name);\nconsole.log(typeof active);','number\nstring\nboolean','The typeof operator returns the type name as a string.');
+    h+='<h2>2. Classification of JavaScript data types</h2>';
+    h+='<table><tr><th>Category</th><th>Types</th><th>Meaning</th></tr><tr><td>Primitive</td><td>string, number, bigint, boolean, undefined, symbol, null</td><td>Single immutable values</td></tr><tr><td>Non-primitive</td><td>object, array, function, date, map, set</td><td>Reference values that can contain structure or behaviour</td></tr></table>';
+    h+='<h2>3. Primitive data types</h2><p>Primitive values are not objects and are copied by value. The following types are built into the language.</p>';
+    h+='<table><tr><th>Type</th><th>Example</th><th>Use</th></tr><tr><td><code>string</code></td><td><code>"OWCUS"</code></td><td>Text</td></tr><tr><td><code>number</code></td><td><code>42</code>, <code>3.14</code></td><td>Integers and floating-point values</td></tr><tr><td><code>bigint</code></td><td><code>123n</code></td><td>Very large integers</td></tr><tr><td><code>boolean</code></td><td><code>true</code></td><td>Logical conditions</td></tr><tr><td><code>undefined</code></td><td><code>let value;</code></td><td>Declared but not assigned</td></tr><tr><td><code>null</code></td><td><code>null</code></td><td>Intentional absence of a value</td></tr><tr><td><code>symbol</code></td><td><code>Symbol(&#39;id&#39;)</code></td><td>Unique object keys</td></tr></table>';
+    h+=jsExample('String values','const course = "JavaScript";\nconsole.log(course);\nconsole.log(course.length);','JavaScript\n10','Strings can be written with single quotes, double quotes, or template literals.');
+    h+=jsExample('Number values','const price = 1250.75;\nconst quantity = 2;\nconsole.log(price * quantity);','2501.5','JavaScript uses one number type for both integer and decimal values.');
+    h+=jsExample('BigInt values','const population = 8000000000n;\nconsole.log(population + 1000000000n);','9000000000n','BigInt literals end with n. Do not mix BigInt and Number in the same arithmetic expression.');
+    h+=jsExample('Boolean values','const age = 20;\nconst eligible = age >= 18;\nconsole.log(eligible);','true','Boolean expressions are useful in conditions and validation rules.');
+    h+=jsExample('undefined and null','let selected;\nconst account = null;\nconsole.log(selected);\nconsole.log(account);','undefined\nnull','undefined usually means no value has been assigned; null is commonly used to represent an intentional empty value.');
+    h+=jsExample('Unique Symbols','const firstId = Symbol("id");\nconst secondId = Symbol("id");\nconsole.log(firstId === secondId);','false','Every Symbol call creates a unique primitive, even when the descriptions are the same.');
+    h+='<h2>4. Non-primitive data types</h2><p>Objects, arrays, and functions are reference values. A variable stores a reference to the value, so two variables can refer to the same object.</p>';
+    h+='<table><tr><th>Reference type</th><th>Example</th><th>Use</th></tr><tr><td>Object</td><td><code>{ name: "Ravi" }</code></td><td>Related key-value data</td></tr><tr><td>Array</td><td><code>[80, 90, 95]</code></td><td>Ordered collection</td></tr><tr><td>Function</td><td><code>function add(a, b) {}</code></td><td>Reusable behaviour</td></tr><tr><td>Date</td><td><code>new Date()</code></td><td>Date and time values</td></tr><tr><td>Map and Set</td><td><code>new Map()</code>, <code>new Set()</code></td><td>Specialized collections</td></tr></table>';
+    h+=jsExample('Objects and arrays','const employee = { name: "Ravi", age: 28 };\nconst marks = [80, 90, 95];\nconsole.log(employee.name);\nconsole.log(marks[1]);','Ravi\n90','Object properties are accessed by key; array elements are accessed by zero-based index.');
+    h+=jsExample('Functions are values','function add(a, b) {\n  return a + b;\n}\nconst calculate = add;\nconsole.log(calculate(7, 5));','12','Functions can be stored in variables, passed to other functions, and returned from functions.');
+    h+='<h2>5. Primitive versus reference values</h2><table><tr><th>Feature</th><th>Primitive</th><th>Reference</th></tr><tr><td>Stores</td><td>The value itself</td><td>A reference to an object</td></tr><tr><td>Examples</td><td>string, number, boolean</td><td>object, array, function</td></tr><tr><td>Mutable</td><td>Primitive values are immutable</td><td>Object contents can be changed</td></tr><tr><td>Copy behaviour</td><td>Copies are independent</td><td>Copies can point to the same object</td></tr><tr><td>Can be null</td><td>No</td><td>Yes</td></tr></table>';
+    h+=jsExample('Copying primitives and references','let first = 10;\nlet second = first;\nsecond = 20;\n\nconst original = { score: 10 };\nconst copy = original;\ncopy.score = 20;\n\nconsole.log(first, second);\nconsole.log(original.score);','10 20\n20','Changing the copied primitive does not change the original. Both object variables refer to the same object.');
+    h+='<h2>6. Type conversion and coercion</h2><p><b>Explicit conversion</b> is performed by your code using functions such as Number, String, and Boolean. <b>Implicit coercion</b> happens automatically when an operator expects another type. Prefer explicit conversion when the result must be predictable.</p>';
+    h+=jsExample('Explicit conversion','const text = "42";\nconst number = Number(text);\nconst label = String(number);\nconst allowed = Boolean(number);\nconsole.log(number, typeof number);\nconsole.log(label, typeof label);\nconsole.log(allowed);','42 number\n42 string\ntrue','Conversion functions make the intended change visible to the reader.');
+    h+=jsExample('Coercion and strict equality','console.log("5" + 1);\nconsole.log("5" - 1);\nconsole.log(5 == "5");\nconsole.log(5 === "5");','51\n4\ntrue\nfalse','The plus operator concatenates when one operand is a string. Prefer === because it compares both value and type without coercion.');
+    h+='<h2>7. Common mistakes</h2><table><tr><th>Mistake</th><th>Correction</th></tr><tr><td>Using <code>==</code> without considering coercion</td><td>Use <code>===</code> for strict comparison.</td></tr><tr><td>Mixing BigInt and Number</td><td>Convert deliberately before arithmetic.</td></tr><tr><td>Assuming <code>typeof null</code> returns null</td><td>Remember the historical result is <code>"object"</code>; check <code>value === null</code>.</td></tr><tr><td>Mutating a shared object accidentally</td><td>Copy intentionally with spread syntax or structuredClone when appropriate.</td></tr><tr><td>Trusting user input to already be a number</td><td>Validate and explicitly convert input before calculations.</td></tr></table>';
+    h+='<h2>8. Real-world example: order validation</h2>';
+    h+=jsExample('Combining data types','const order = {\n  product: "Keyboard",\n  quantity: 2,\n  price: 1500,\n  paid: true\n};\n\nconst total = order.quantity * order.price;\nconsole.log(order.product);\nconsole.log(total);\nconsole.log(order.paid ? "Confirmed" : "Pending");','Keyboard\n3000\nConfirmed','The object groups related values, numbers support the calculation, and the boolean controls the status message.');
+    h+='<h2>Practice exercises</h2><ol><li>Print the type of a string, number, boolean, undefined value, null value, array, and function.</li><li>Convert a form input string into a number and reject NaN.</li><li>Create an order object and calculate its total from quantity and price.</li><li>Demonstrate the difference between copying a primitive and copying an object.</li></ol>';
+    h+='<h2>Interview questions</h2><ol><li>What is the difference between primitive and reference values?</li><li>Why should strict equality usually be preferred over loose equality?</li><li>What is the difference between null and undefined?</li><li>Why can’t BigInt and Number be mixed directly?</li><li>What does <code>typeof null</code> return and how should null be checked?</li></ol>';
+    h+='<div class="box"><b>Summary:</b> JavaScript has seven primitive types and many reference types. Use <code>typeof</code> to inspect values, convert input explicitly, prefer <code>===</code>, and remember that objects and arrays are shared by reference.</div>';
+    h+='<div class="pn"><a href="#js41">« Previous</a><a href="#js43">Next »</a></div>';
+    return h;
+  }
+  window.renderJsDataTypesLesson=jsDataTypesLesson;
+  var originalShow=show;
+  show=function(){
+    originalShow();
+    if(location.hash.slice(1)==='js42'){
+      $('#center').innerHTML='<div class="c">'+jsDataTypesLesson()+'</div>';
+      $('#center').scrollTop=0;
+      $('#ed').value='const age = 25;\nconst salary = 45000.50;\nconst grade = "A";\nconst active = true;\nconsole.log(age, salary, grade, active);';
+      cur=$('#ed').value; curOut=''; run();
+      document.title='JavaScript Data Types · JavaScript Tutorial';
+    }
+  };
+  if(location.hash.slice(1)==='js42')show();
+  setTimeout(function(){if(!location.hash)location.hash='#js-overview';},0);
+})();
+</script>
+<script>
+(function(){
+  function applyJavaScriptDataTypesLesson(){
+    if(location.hash.slice(1)!=='js42')return;
+    $('#center').innerHTML='<div class="c">'+window.renderJsDataTypesLesson()+'</div>';
+    $('#center').scrollTop=0;
+    $('#ed').value='const age = 25;\nconst salary = 45000.50;\nconst grade = "A";\nconst active = true;\nconsole.log(age, salary, grade, active);';
+    cur=$('#ed').value; curOut=''; run();
+    document.title='JavaScript Data Types · JavaScript Tutorial';
+  }
+  window.addEventListener('hashchange',applyJavaScriptDataTypesLesson);
+  setTimeout(applyJavaScriptDataTypesLesson,50);
+})();
+</script>
