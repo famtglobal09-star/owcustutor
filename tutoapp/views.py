@@ -140,7 +140,11 @@ def resume_role(request, slug):
 
 
 def resume_sitemap(request):
-    urls = ['/resume/'] + [f"/resume/{role['slug']}/" for role in ROLE_CATALOG]
+    urls = [
+        '/', '/tutorials/', '/html/', '/css/', '/javascript/', '/python/',
+        '/csharp/', '/data-science/', '/manual-testing/', '/practical-skills/',
+        '/java/', '/compiler/', '/practice/', '/resume-builder/', '/resume/',
+    ] + [f"/resume/{role['slug']}/" for role in ROLE_CATALOG]
     body = '<?xml version="1.0" encoding="UTF-8"?>' + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     body += ''.join(f'<url><loc>{request.build_absolute_uri(path)}</loc></url>' for path in urls)
     body += '</urlset>'
@@ -152,6 +156,10 @@ def robots_txt(request):
         f'User-agent: *\nAllow: /\nSitemap: {request.build_absolute_uri("/sitemap.xml")}\n',
         content_type='text/plain',
     )
+
+
+def google_site_verification(request):
+    return HttpResponse('google-site-verification: google25bab95f8df852e0.html\n', content_type='text/html')
 
 
 @csrf_exempt

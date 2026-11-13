@@ -19,7 +19,7 @@ from django.urls import path
 from tutoapp.views import (
     compiler_execute, compiler_languages, compiler_page, course_page, home,
     java, java_compile, practice_catalog, practice_page, practice_submit,
-    resume_ai_ats_audit, resume_ai_suggest_responsibilities, resume_builder_page, resume_hub, resume_role, resume_sitemap, robots_txt, saved_programs, tutorials,
+    google_site_verification, resume_ai_ats_audit, resume_ai_suggest_responsibilities, resume_builder_page, resume_hub, resume_role, resume_sitemap, robots_txt, saved_programs, tutorials,
 )
 
 urlpatterns = [
@@ -41,6 +41,7 @@ urlpatterns = [
     path('resume/<slug:slug>/', resume_role, name='resume_role'),
     path('sitemap.xml', resume_sitemap, name='resume_sitemap'),
     path('robots.txt', robots_txt, name='robots_txt'),
+    path('google25bab95f8df852e0.html', google_site_verification, name='google_site_verification'),
     path('api/ai/suggest-responsibilities', resume_ai_suggest_responsibilities, name='resume_ai_suggest_responsibilities'),
     path('api/ai/ats-audit', resume_ai_ats_audit, name='resume_ai_ats_audit'),
     path('api/compiler/languages/', compiler_languages, name='compiler_languages'),
