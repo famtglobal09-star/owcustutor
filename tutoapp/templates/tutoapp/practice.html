@@ -2,13 +2,16 @@
 <!doctype html>
 <html lang="en">
 <head>
+  {% include "tutoapp/adsense-script.html" %}
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-6776941375498143">
   <title>OWCUS Coding Practice</title>
-  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}">
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
   <link rel="stylesheet" href="{% static 'tutoapp/practice.css' %}">
 </head>
 <body class="practice-page">
-  <header class="landing-header practice-header"><a class="brand" href="/"><span class="brand-mark">o</span><span>owcus</span></a>{% include "tutoapp/site_nav.html" %}</header>
+  <header class="landing-header practice-header"><a class="brand" href="/"><span class="brand-mark">o</span><span>owcus</span></a>{% include "tutoapp/site_nav_clean.html" %}</header>
   <main class="practice-shell">
     <section class="practice-hero"><p class="eyebrow">OWCUS Coding Practice</p><h1>Turn lessons into solved problems.</h1><p>Choose a challenge, read the constraints, write a solution, and submit it through the isolated runner.</p></section>
     <section class="practice-layout">
@@ -25,6 +28,7 @@
       </section>
     </section>
   </main>
-  <script src="{% static 'tutoapp/site-nav.js' %}"></script><script src="{% static 'tutoapp/practice.js' %}"></script>
+  <script src="{% static 'tutoapp/site-nav.js' %}?v=20261116-nav3"></script><script src="{% static 'tutoapp/practice.js' %}"></script>
+  {% include "tutoapp/site_footer.html" %}
 </body>
 </html>

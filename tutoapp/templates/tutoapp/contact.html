@@ -1,0 +1,30 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "tutoapp/adsense-script.html" %}
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-6776941375498143">
+  <meta name="description" content="Contact OWCUS Tutorials about lesson corrections, accessibility, privacy, or general feedback.">
+  <title>Contact OWCUS Tutorials</title>
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
+</head>
+<body>
+  <header class="legal-header"><a class="legal-brand" href="/">OWCUS</a>{% include "tutoapp/site_nav_clean.html" %}</header>
+  <main class="legal-main">
+    <span class="legal-kicker">Contact</span>
+    <h1>We’d like to hear from you.</h1>
+    <p class="legal-lead">Found an issue, want to suggest a tutorial, or need help with an account? Send us a message and include the page URL when it is relevant.</p>
+    <section class="legal-card">
+      <h2>Email support</h2>
+      <p>For general questions, content corrections, accessibility feedback, privacy requests, or account support, email <a href="mailto:contact@owcus.com">contact@owcus.com</a>.</p>
+      <h2>What to include</h2>
+      <ul><li>The page or feature you are referring to.</li><li>A short description of the issue or request.</li><li>Your browser and device when reporting a technical problem.</li><li>Never send passwords, verification codes, or private Firebase credentials.</li></ul>
+      <h2>Response time</h2>
+      <p>We aim to review messages within a reasonable period. Educational feedback and privacy requests are handled with care and are not used for advertising purposes.</p>
+    </section>
+  </main>
+  {% include "tutoapp/site_footer.html" %}
+</body>
+</html>

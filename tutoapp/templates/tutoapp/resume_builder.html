@@ -2,12 +2,15 @@
 <!doctype html>
 <html lang="en">
 <head>
+  {% include "tutoapp/adsense-script.html" %}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-6776941375498143">
   <title>OWCUS AI Resume Builder – 200+ Role Templates</title>
   <meta name="description" content="Create an ATS-friendly resume with 200+ job-role templates, experience variations, guided writing, ATS checks and PDF export.">
-  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}">
-    <link rel="stylesheet" href="{% static 'tutoapp/resume-builder/assets/index-uW8WPiUc.css' %}">
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
+    <link rel="stylesheet" href="{% static 'tutoapp/resume-builder/assets/index-L3fiGW0R.css' %}">
   <style>
     .resume-builder-header{position:relative;z-index:60;height:54px;display:flex;align-items:center;gap:12px;padding:0 14px;background:#0b7a5a;color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
     .resume-builder-header .logo{font:700 20px Georgia,serif;white-space:nowrap}
@@ -24,10 +27,11 @@
 <body class="resume-builder-host">
   <header class="resume-builder-header top">
     <div class="logo">OWCUS<span>Resume Builder</span></div>
-    {% include "tutoapp/site_nav.html" %}
+    {% include "tutoapp/site_nav_clean.html" %}
   </header>
   <div id="root"></div>
-  <script src="{% static 'tutoapp/site-nav.js' %}"></script>
-  <script type="module" crossorigin src="{% static 'tutoapp/resume-builder/assets/index-DfCYDLWE.js' %}"></script>
+  <script src="{% static 'tutoapp/site-nav.js' %}?v=20261116-nav3"></script>
+  <script type="module" crossorigin src="{% static 'tutoapp/resume-builder/assets/index-CBai2W5M.js' %}"></script>
+  {% include "tutoapp/site_footer.html" %}
 </body>
 </html>

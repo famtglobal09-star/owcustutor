@@ -1,17 +1,30 @@
 import json
+import logging
 import os
+import secrets
 import time
+from datetime import timedelta
 from urllib import request as urlrequest
 from urllib.error import HTTPError, URLError
 
+from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth.hashers import check_password, make_password
+from django.contrib.auth.password_validation import validate_password
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
+from django.utils import timezone
+from django.urls import reverse
 
-from .models import PracticeSubmission, SavedProgram
+from .models import EmailVerificationChallenge, PracticeSubmission, SavedProgram
 from .resume_catalog import EXPERIENCE_OPTIONS, ROLE_BY_SLUG, ROLE_CATALOG, ROLE_GROUPS, role_content
+
+logger = logging.getLogger(__name__)
 
 
 LANGUAGES = [
@@ -56,11 +69,39 @@ PRACTICE_CHALLENGES = [
     {'id': 'two-sum', 'title': 'Two Sum', 'difficulty': 'Advanced', 'topic': 'Algorithms', 'statement': 'Given a list and a target, find two different positions whose values add to the target.', 'input': 'A list of integers and a target value.', 'output': 'The two positions, or -1 if no pair exists.', 'constraints': 'Use a dictionary for an O(n) approach.', 'starter': 'numbers = [2, 7, 11, 15]\ntarget = 9\nseen = {}\nfor index, value in enumerate(numbers):\n    needed = target - value\n    if needed in seen:\n        print(seen[needed], index)\n        break\n    seen[value] = index', 'hint': 'Store values already seen and look up the complement.'},
 ]
 
+@ensure_csrf_cookie
 def home(request):
     return render(request, 'tutoapp/home.html')
 
+def about_page(request):
+    return render(request, 'tutoapp/about.html')
+
+def contact_page(request):
+    return render(request, 'tutoapp/contact.html')
+
+def privacy_page(request):
+    return render(request, 'tutoapp/privacy.html')
+
+def terms_page(request):
+    return render(request, 'tutoapp/terms.html')
+
+def dashboard(request):
+    return render(request, 'tutoapp/dashboard.html')
+
 def tutorials(request):
     return render(request, 'tutoapp/tutorials.html')
+
+
+def dv360_page(request):
+    return render(request, 'tutoapp/dv360.html')
+
+
+def cm360_page(request):
+    return render(request, 'tutoapp/cm360.html')
+
+
+def marketing_sandbox_showcase(request):
+    return render(request, 'tutoapp/marketing_sandbox_showcase.html')
 
 
 def course_page(request, course_name):
@@ -141,7 +182,7 @@ def resume_role(request, slug):
 
 def resume_sitemap(request):
     urls = [
-        '/', '/tutorials/', '/html/', '/css/', '/javascript/', '/python/',
+        '/', '/about/', '/contact/', '/privacy/', '/terms/', '/tutorials/', '/html/', '/css/', '/javascript/', '/python/',
         '/csharp/', '/data-science/', '/manual-testing/', '/practical-skills/',
         '/java/', '/compiler/', '/practice/', '/resume-builder/', '/resume/',
     ] + [f"/resume/{role['slug']}/" for role in ROLE_CATALOG]
@@ -157,9 +198,141 @@ def robots_txt(request):
         content_type='text/plain',
     )
 
+def ads_txt(request):
+    return HttpResponse(
+        'google.com, pub-6776941375498143, DIRECT, f08c47fec0942fa0\n',
+        content_type='text/plain',
+    )
+
 
 def google_site_verification(request):
     return HttpResponse('google-site-verification: google25bab95f8df852e0.html\n', content_type='text/html')
+
+
+OTP_TTL_SECONDS = 5 * 60
+OTP_RESEND_SECONDS = 60
+OTP_MAX_ATTEMPTS = 5
+OTP_MAX_PER_HOUR = 5
+
+
+def _normalise_email(value):
+    return str(value or '').strip().casefold()
+
+
+@require_POST
+def auth_otp_start(request):
+    payload = _json_body(request) or {}
+    email = _normalise_email(payload.get('email'))
+    purpose = payload.get('purpose')
+    full_name = str(payload.get('full_name') or '').strip()[:150]
+    if '@' not in email or len(email) > 254:
+        return JsonResponse({'ok': False, 'error': 'Enter a valid email address.'}, status=400)
+    if purpose not in {EmailVerificationChallenge.REGISTRATION, EmailVerificationChallenge.PASSWORD_RESET}:
+        return JsonResponse({'ok': False, 'error': 'Unsupported verification request.'}, status=400)
+
+    user_model = get_user_model()
+    existing = user_model.objects.filter(email__iexact=email).first()
+    if purpose == EmailVerificationChallenge.REGISTRATION and existing:
+        return JsonResponse({'ok': False, 'error': 'An account already exists for this email. Please sign in.'}, status=409)
+
+    now = timezone.now()
+    recent = EmailVerificationChallenge.objects.filter(email=email, purpose=purpose, created_at__gte=now - timedelta(hours=1)).count()
+    latest = EmailVerificationChallenge.objects.filter(email=email, purpose=purpose).order_by('-created_at').first()
+    if recent >= OTP_MAX_PER_HOUR or (latest and (now - latest.created_at).total_seconds() < OTP_RESEND_SECONDS):
+        return JsonResponse({'ok': True, 'message': 'A verification code was recently sent. Please wait before requesting another code.'})
+
+    link_token = secrets.token_urlsafe(32)
+    challenge = EmailVerificationChallenge.objects.create(email=email, full_name=full_name, purpose=purpose, code_hash=make_password(secrets.token_urlsafe(24)), link_token_hash=make_password(link_token), expires_at=now + timedelta(seconds=OTP_TTL_SECONDS))
+    verification_url = request.build_absolute_uri(f'{reverse("home")}?verify={challenge.pk}&token={link_token}')
+    delivery_text = f'Click this secure OWCUS verification link to verify your email and create your password:\n\n{verification_url}\n\nThis link expires in 5 minutes. If you did not request this, you can ignore this email.'
+    try:
+        send_mail('Verify your OWCUS account', delivery_text, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+    except Exception:
+        logger.exception('OWCUS verification email delivery failed for %s', email)
+        challenge.delete()
+        return JsonResponse({'ok': False, 'error': 'We could not send the verification email. Please try again later.'}, status=503)
+    return JsonResponse({'ok': True, 'challenge_id': challenge.pk, 'cooldown_seconds': OTP_RESEND_SECONDS, 'message': 'Check your email for the verification code.'})
+
+
+@require_POST
+def auth_otp_verify(request):
+    payload = _json_body(request) or {}
+    challenge = EmailVerificationChallenge.objects.filter(pk=payload.get('challenge_id')).first()
+    now = timezone.now()
+    if not challenge or challenge.used_at or challenge.verified_at or challenge.expires_at <= now or challenge.attempts >= OTP_MAX_ATTEMPTS:
+        return JsonResponse({'ok': False, 'error': 'That verification code is invalid or expired.'}, status=400)
+    challenge.attempts += 1
+    if not check_password(str(payload.get('code') or '').strip(), challenge.code_hash):
+        challenge.save(update_fields=['attempts'])
+        return JsonResponse({'ok': False, 'error': 'That verification code is incorrect.'}, status=400)
+    challenge.verified_at = now
+    challenge.save(update_fields=['attempts', 'verified_at'])
+    return JsonResponse({'ok': True, 'message': 'Email verified. You can now create your password.'})
+
+
+@require_POST
+def auth_otp_verify_link(request):
+    payload = _json_body(request) or {}
+    challenge = EmailVerificationChallenge.objects.filter(pk=payload.get('challenge_id')).first()
+    now = timezone.now()
+    if not challenge or challenge.used_at or challenge.verified_at or challenge.expires_at <= now or not check_password(str(payload.get('token') or ''), challenge.link_token_hash):
+        return JsonResponse({'ok': False, 'error': 'That verification link is invalid or expired.'}, status=400)
+    challenge.verified_at = now
+    challenge.save(update_fields=['verified_at'])
+    return JsonResponse({'ok': True, 'challenge_id': challenge.pk, 'purpose': challenge.purpose, 'email': challenge.email, 'name': challenge.full_name})
+
+
+@require_POST
+def auth_otp_complete(request):
+    payload = _json_body(request) or {}
+    challenge = EmailVerificationChallenge.objects.filter(pk=payload.get('challenge_id')).first()
+    password = str(payload.get('password') or '')
+    if not challenge or not challenge.verified_at or challenge.used_at or challenge.expires_at <= timezone.now():
+        return JsonResponse({'ok': False, 'error': 'Verify your email again before creating a password.'}, status=400)
+    if password != str(payload.get('confirm_password') or ''):
+        return JsonResponse({'ok': False, 'error': 'Passwords do not match.'}, status=400)
+    try:
+        validate_password(password)
+    except ValidationError as error:
+        return JsonResponse({'ok': False, 'error': ' '.join(error.messages)}, status=400)
+    user_model = get_user_model()
+    user = user_model.objects.filter(email__iexact=challenge.email).first()
+    if challenge.purpose == EmailVerificationChallenge.REGISTRATION:
+        if user:
+            return JsonResponse({'ok': False, 'error': 'An account already exists for this email. Please sign in.'}, status=409)
+        user = user_model.objects.create_user(username=challenge.email, email=challenge.email, password=password, first_name=challenge.full_name)
+    elif user:
+        user.set_password(password)
+        user.save(update_fields=['password'])
+    challenge.used_at = timezone.now()
+    challenge.save(update_fields=['used_at'])
+    if user:
+        login(request, user)
+    return JsonResponse({'ok': True, 'message': 'Password saved successfully.', 'user': {'email': challenge.email, 'name': challenge.full_name}})
+
+
+@require_http_methods(['GET'])
+def auth_session(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'authenticated': False})
+    return JsonResponse({'authenticated': True, 'user': {'email': request.user.email, 'name': request.user.first_name or request.user.username}})
+
+
+@require_POST
+def auth_email_login(request):
+    payload = _json_body(request) or {}
+    email = _normalise_email(payload.get('email'))
+    user = get_user_model().objects.filter(email__iexact=email).first()
+    if not user or not user.check_password(str(payload.get('password') or '')) or not user.is_active:
+        return JsonResponse({'ok': False, 'error': 'Email or password is incorrect.'}, status=401)
+    login(request, user)
+    return JsonResponse({'ok': True, 'user': {'email': user.email, 'name': user.first_name or user.username}})
+
+
+@require_POST
+def auth_logout(request):
+    logout(request)
+    return JsonResponse({'ok': True})
 
 
 @csrf_exempt

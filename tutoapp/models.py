@@ -32,3 +32,23 @@ class PracticeSubmission(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class EmailVerificationChallenge(models.Model):
+    REGISTRATION = 'registration'
+    PASSWORD_RESET = 'password_reset'
+    PURPOSES = ((REGISTRATION, 'Registration'), (PASSWORD_RESET, 'Password reset'))
+
+    email = models.EmailField(db_index=True)
+    full_name = models.CharField(max_length=150, blank=True)
+    purpose = models.CharField(max_length=20, choices=PURPOSES)
+    code_hash = models.CharField(max_length=256)
+    link_token_hash = models.CharField(max_length=256, blank=True)
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        indexes = [models.Index(fields=['email', 'purpose', '-created_at'])]

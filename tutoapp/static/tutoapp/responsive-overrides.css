@@ -1,0 +1,58 @@
+/* Shared responsive layer for the OWCUS Django pages. */
+html{max-width:100%;overflow-x:hidden}
+body{max-width:100%;overflow-x:hidden}
+img,svg,video,canvas,iframe{max-width:100%;height:auto}
+button,input,select,textarea{max-width:100%;font:inherit}
+.landing-header,.legal-header,.site-header,.practice-header,.compiler-header{min-width:0;padding-inline:clamp(16px,3.5vw,68px)}
+.landing-header>.brand,.legal-header>.brand,.site-header>.brand,.practice-header>.brand,.compiler-header>.brand{flex:0 0 auto}
+.site-menu{min-width:0;max-width:100%}
+.menu-link{white-space:nowrap}
+.landing-shell,.practice-shell,.compiler-shell,.legal-main{width:100%;min-width:0}
+.course-grid,.lesson-grid,.challenge-grid,.cards,.quick-grid,.legal-grid{min-width:0}
+.course-card,.lesson-tile,.challenge-sidebar,.challenge-workspace,.compiler-sidebar,.compiler-panel,.panel,.metric{min-width:0}
+.course-card h3,.course-card p,.lesson-tile h3,.lesson-tile p,.challenge-workspace p,.legal-card{overflow-wrap:anywhere}
+.table-wrap,.tag-preview,.codebox,.editor-wrap,.io-panels{max-width:100%;overflow-x:auto}
+.platform-rail:not(.premium-tool-rail){display:none}
+.premium-tool-rail{display:grid;grid-template-columns:1.25fr repeat(4,minmax(0,1fr));gap:12px;max-width:1900px;margin:0 auto;padding:22px clamp(24px,5vw,68px);border-top:1px solid #dce5e8;border-bottom:1px solid #dce5e8;background:#f7faf9}
+.premium-tool-rail .platform-intro{display:flex;flex-direction:column;justify-content:center;padding-right:20px}
+.premium-tool-rail .platform-intro .eyebrow{margin:0 0 7px;font-size:10px}
+.premium-tool-rail .platform-intro strong{max-width:190px;color:#172536;font-size:16px;line-height:1.25}
+.premium-tool-rail>a{display:flex;align-items:center;gap:10px;padding:12px;border-radius:13px;transition:background .2s,transform .2s}
+.premium-tool-rail>a:hover{background:#fff;transform:translateY(-2px)}
+.premium-tool-rail>a>span:nth-child(2){display:grid;gap:4px;min-width:0}
+.premium-tool-rail b{color:#172536;font-size:12px}
+.premium-tool-rail small{color:#78909e;font-size:10px;white-space:nowrap}
+.premium-tool-rail em{margin-left:auto;color:#e67534;font-style:normal}
+.premium-tool-rail .platform-icon{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:10px;font-weight:800}
+.premium-tool-rail .platform-icon.coral{background:#fff0eb;color:#d86647}.premium-tool-rail .platform-icon.gold{background:#fff6df;color:#b58422}.premium-tool-rail .platform-icon.green{background:#e6f5ef;color:#17805f}.premium-tool-rail .platform-icon.purple{background:#eee9fb;color:#6e56a5}
+@media(max-width:980px){.premium-tool-rail{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-tool-rail .platform-intro{grid-column:1/-1;padding-bottom:8px}}
+@media(max-width:680px){.premium-tool-rail{grid-template-columns:1fr;padding-top:20px;padding-bottom:20px}.premium-tool-rail .platform-intro{grid-column:auto}.premium-tool-rail>a{border-top:1px solid #e5ecec;border-radius:0;padding:14px 0}}
+
+@media (max-width:1550px){
+  .site-menu{display:none;position:absolute;top:64px;left:16px;right:16px;padding:12px;background:#fff;border:1px solid #dbe4e7;border-radius:16px;box-shadow:0 14px 30px rgba(17,37,56,.15);flex-direction:column;align-items:stretch;gap:4px;z-index:40}
+  .site-menu.open{display:flex}
+  .site-menu .menu-link{display:block!important}
+  .menu-toggle{display:inline-flex;margin-left:auto}
+  .landing-header,.legal-header,.practice-header,.compiler-header{position:relative}
+  .landing-header .site-menu,.legal-header .site-menu,.practice-header .site-menu,.compiler-header .site-menu{top:64px}
+  .menu-link{padding:12px 14px;border-radius:10px}
+  .header-link{margin-left:auto}
+  .site-auth-actions{margin-left:8px}
+}
+@media (min-width:901px) and (max-width:1180px){
+  .premium-hero-home{grid-template-columns:minmax(0,1fr)!important;gap:38px;padding-top:34px}
+  .premium-hero-home .hero-console{max-width:760px;width:100%;margin-inline:auto}
+  .practice-layout,.compiler-layout{grid-template-columns:minmax(205px,24vw) minmax(0,1fr)}
+  .challenge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rail{width:clamp(190px,19vw,232px)}
+  main{margin-left:clamp(190px,19vw,232px)}
+}
+@media (max-width:800px){
+  .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{padding-inline:16px}
+  .landing-header .site-menu,.legal-header .site-menu,.practice-header .site-menu,.compiler-header .site-menu{top:64px}
+  .site-auth-actions[data-auth-loading="true"]{min-width:0}
+  .section-title,.toolbar,.greeting{align-items:flex-start;flex-wrap:wrap;gap:14px}
+}
+@media (max-width:1550px){
+  .premium-hero-home h1{font-size:clamp(48px,6vw,78px)}
+}

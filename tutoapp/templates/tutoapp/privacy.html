@@ -1,0 +1,41 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "tutoapp/adsense-script.html" %}
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-6776941375498143">
+  <meta name="description" content="OWCUS Tutorials privacy policy covering accounts, cookies, analytics, advertising, and user choices.">
+  <title>Privacy Policy | OWCUS Tutorials</title>
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
+</head>
+<body>
+  <header class="legal-header"><a class="legal-brand" href="/">OWCUS</a>{% include "tutoapp/site_nav_clean.html" %}</header>
+  <main class="legal-main">
+    <span class="legal-kicker">Privacy</span>
+    <h1>Privacy Policy</h1>
+    <p class="legal-updated">Last updated: November 15, 2026</p>
+    <p class="legal-lead">This policy explains what OWCUS Tutorials may process when you browse the site, create an account, use learning tools, or contact us.</p>
+    <section class="legal-card">
+      <h2>Information we process</h2>
+      <p>When you create an account, Firebase Authentication may process your email address, display name, profile image, authentication provider, and account identifier. We use this to sign you in and show your account across OWCUS pages.</p>
+      <p>Learning tools may process the information you choose to enter, such as code, practice submissions, resume content, or support messages. Do not submit passwords, payment details, government IDs, or other sensitive information into learning examples.</p>
+      <h2>Cookies and local storage</h2>
+      <p>Authentication and site functionality may use cookies, browser storage, and similar technologies to keep you signed in, remember preferences, protect sessions, and operate the site. Clearing these technologies may sign you out or reset preferences.</p>
+      <h2>Advertising and Google services</h2>
+      <p>OWCUS may use Google AdSense to display advertisements. Google and its partners may use cookies or similar technologies to measure ads, prevent fraud, and personalize advertising where permitted. You can manage advertising personalization through your Google Ads Settings and browser controls.</p>
+      <p>Before serving personalized advertising to users in regions that require consent, the site operator must configure an appropriate consent solution in Google AdSense / Privacy &amp; messaging and comply with applicable law. This page is not legal advice.</p>
+      <h2>How information is used</h2>
+      <ul><li>To provide authentication, saved work, and requested learning features.</li><li>To maintain security, prevent abuse, and troubleshoot errors.</li><li>To improve lesson quality and site usability.</li><li>To respond to support and privacy requests.</li><li>To measure and deliver advertising when enabled and legally permitted.</li></ul>
+      <h2>Sharing and retention</h2>
+      <p>We use service providers such as Firebase and Google services to operate the features described above. We do not sell your private account information. We retain information only for as long as needed for the relevant feature, security, legal, or support purpose.</p>
+      <h2>Your choices and requests</h2>
+      <p>You can sign out, clear browser storage, decline optional cookies where a consent choice is presented, or contact us to ask about access, correction, or deletion of information associated with your request. Email <a href="mailto:contact@owcus.com">contact@owcus.com</a>.</p>
+      <h2>Changes</h2>
+      <p>We may update this policy as the site or legal requirements change. The latest version will always be published on this page with its updated date.</p>
+    </section>
+  </main>
+  {% include "tutoapp/site_footer.html" %}
+</body>
+</html>

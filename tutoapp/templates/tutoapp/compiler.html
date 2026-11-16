@@ -2,17 +2,20 @@
 <!doctype html>
 <html lang="en">
 <head>
+  {% include "tutoapp/adsense-script.html" %}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-6776941375498143">
   <title>OWCUS Code Playground</title>
-  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}">
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
   <link rel="stylesheet" href="{% static 'tutoapp/compiler.css' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 </head>
 <body class="compiler-page">
   <header class="landing-header compiler-header">
     <a class="brand" href="/"><span class="brand-mark">o</span><span>owcus</span></a>
-    {% include "tutoapp/site_nav.html" %}
+    {% include "tutoapp/site_nav_clean.html" %}
   </header>
   <main class="compiler-shell">
     <section class="compiler-hero">
@@ -64,7 +67,8 @@
   </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
-  <script src="{% static 'tutoapp/site-nav.js' %}"></script>
+  <script src="{% static 'tutoapp/site-nav.js' %}?v=20261116-nav3"></script>
   <script src="{% static 'tutoapp/compiler.js' %}"></script>
+  {% include "tutoapp/site_footer.html" %}
 </body>
 </html>

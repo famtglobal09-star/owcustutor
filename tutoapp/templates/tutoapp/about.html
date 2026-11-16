@@ -1,0 +1,32 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "tutoapp/adsense-script.html" %}
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-6776941375498143">
+  <meta name="description" content="Learn with OWCUS through practical tutorials, coding practice, tools, and career resources.">
+  <title>About OWCUS Tutorials</title>
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
+</head>
+<body>
+  <header class="legal-header"><a class="legal-brand" href="/">OWCUS</a>{% include "tutoapp/site_nav_clean.html" %}</header>
+  <main class="legal-main">
+    <span class="legal-kicker">About OWCUS</span>
+    <h1>Learning should lead somewhere.</h1>
+    <p class="legal-lead">OWCUS Tutorials is a practical learning hub for people who want to understand technology and build useful work with it.</p>
+    <section class="legal-card">
+      <h2>What we make</h2>
+      <p>We publish structured lessons for programming and web development, interactive examples, coding practice, browser-based learning tools, resume resources, and guided career materials.</p>
+      <p>Our goal is to make each lesson useful outside the classroom: explain one idea clearly, show it in context, and give learners a practical way to apply it.</p>
+      <h2>Our approach</h2>
+      <ul><li>Clear explanations before complicated jargon.</li><li>Runnable examples and expected outputs where possible.</li><li>Practice tasks that encourage understanding, not copying.</li><li>Career resources that help learners turn skills into evidence.</li></ul>
+      <h2>Editorial standard</h2>
+      <p>OWCUS content is written and organized for this site. We review lessons for clarity, accuracy, accessibility, and usefulness. If you find an error or have a suggestion, please <a href="/contact/">contact us</a>.</p>
+    </section>
+    <div class="legal-grid"><a class="legal-link-card" href="/tutorials/"><strong>Browse tutorials</strong><span>Learn by topic and chapter.</span></a><a class="legal-link-card" href="/practice/"><strong>Practice coding</strong><span>Turn concepts into solved problems.</span></a><a class="legal-link-card" href="/resume/"><strong>Build your career</strong><span>Explore resume examples and tools.</span></a></div>
+  </main>
+  {% include "tutoapp/site_footer.html" %}
+</body>
+</html>

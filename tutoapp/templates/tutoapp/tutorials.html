@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+{% include "tutoapp/adsense-script.html" %}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="google-adsense-account" content="ca-pub-6776941375498143">
 <title>HTML Tutorials — Learn HTML with Live Examples</title>
 <meta name="description" content="Learn HTML with detailed explanations, examples, interactive editor and live output.">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -12,7 +14,8 @@
 <meta property="og:title" content="Free Programming Tutorials: HTML, CSS, JavaScript, Python, C# and Data Science">
 <meta property="og:description" content="Learn HTML with detailed explanations, examples, interactive editor and live output.">
 <meta name="twitter:card" content="summary">
-<link rel="stylesheet" href="/static/tutoapp/site-nav.css">
+<link rel="stylesheet" href="/static/tutoapp/site-nav.css?v=20261116-responsive">
+<link rel="stylesheet" href="/static/tutoapp/legal.css">
 <script type="application/ld+json" id="ld">{"@context":"https://schema.org","@type":"WebSite","name":"Web and Programming Tutorials","description":"Free programming tutorials with live examples and outputs.","inLanguage":"en"}</script>
 <style>
 :root{--bg:#fff;--fg:#1f2933;--mut:#52606d;--side:#f3f6f5;--bd:#dde3e1;--br:#0b7a5a;--brd:#095f46;--lt:#e6f4ee;--code:#f6f8f7;--hdr:#0b7a5a;--warn:#fff4e0;--wb:#f59e0b;
@@ -27,6 +30,14 @@ body{margin:0;height:100%;display:flex;flex-direction:column;background:var(--bg
 .bc{font-size:14px;color:var(--mut);margin-bottom:6px}
 .bc a{color:var(--br)}
 .top{background:var(--hdr);color:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;height:54px;flex:none}
+.course-top{position:sticky;top:0;z-index:30;height:68px;padding:0 clamp(20px,5vw,68px);background:rgba(255,255,255,.96);color:#172536;border-bottom:1px solid #edf0f1;box-shadow:0 4px 18px rgba(17,37,56,.06);backdrop-filter:blur(14px)}
+.course-brand{display:flex;align-items:center;gap:9px;flex:none;color:#172536;text-decoration:none;font-size:21px;font-weight:700;letter-spacing:-.06em;white-space:nowrap}
+.course-brand-mark{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#172536;color:#fff;font:bold 21px Georgia;padding-right:3px}
+.course-brand small{margin-left:7px;color:#78909e;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.course-top .site-menu{margin-left:auto}
+.course-top .site-menu{order:0}.course-top .site-auth-actions{order:1}.course-top .menu-toggle{order:2}
+.course-tools{display:flex;align-items:center;gap:10px;min-height:48px;padding:6px clamp(20px,5vw,68px);background:var(--hdr);color:#fff;border-bottom:1px solid rgba(255,255,255,.15)}
+.course-tools .logo{font-size:15px}.course-tools .langs{margin-left:auto}.course-tools .views{margin-left:0}
 .logo{font:700 20px Georgia,serif;white-space:nowrap}.logo span{opacity:.75;font-weight:400;margin-left:6px}
 .views{margin-left:auto;display:flex;gap:4px}
 .views button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:6px;padding:5px 10px;font:inherit;font-size:14px;cursor:pointer}
@@ -103,6 +114,7 @@ body:not([data-lang="py"]):not([data-lang="cs"]):not([data-lang="ds"]) #pyout{di
 .top{height:auto;flex-wrap:wrap;padding:6px 10px;gap:6px}
 .langs{margin-left:0}
 }
+@media(max-width:900px){.course-top{padding:0 20px}.course-brand small{display:none}.course-top .site-menu{margin-left:0}.course-tools{padding:6px 20px;overflow-x:auto}.course-tools .langs{margin-left:0;flex:none}.course-tools .views{flex:none}}
 .nav-tools{display:flex;gap:6px;margin:0 0 10px}.nav-tools button{flex:1;padding:6px 4px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);border-radius:5px;cursor:pointer;font-size:12px}.diagram{margin:18px 0;padding:14px;background:var(--side);border:1px solid var(--bd);border-radius:10px;overflow-x:auto}.diagram svg{display:block;width:100%;min-width:540px;height:auto}.diagram figcaption{font-size:14px;color:var(--mut);margin-top:8px}.lesson-extra{margin:16px 0}.lesson-extra details{border:1px solid var(--bd);border-radius:7px;margin:8px 0;padding:10px 12px}.lesson-extra summary{cursor:pointer;font-weight:700;color:var(--br)}.testcase{overflow-x:auto}.testcase table{min-width:620px}.pilltag{display:inline-block;background:var(--lt);color:var(--br);padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;margin:2px 4px 2px 0}
 
 /* Collapsible code panel and independent ad column */
@@ -163,12 +175,15 @@ body:not([data-lang="py"]):not([data-lang="cs"]):not([data-lang="ds"]) #pyout{di
 <body>
 <a class="skip" href="#center">Skip to lesson content</a>
 <noscript><main style="padding:20px;font:16px/1.6 system-ui"><h1>Free Programming Tutorials</h1><p>Learn HTML with explanations, examples and live output. The interactive lessons and live code editor need JavaScript to be turned on in your browser.</p></main></noscript>
-<header class="top">
+<header class="top course-top">
+<a class="course-brand brand" href="/" aria-label="OWCUS home"><span class="brand-mark">o</span><span>owcus</span></a>
+{% include "tutoapp/site_nav_clean.html" %}
+</header>
+<div class="course-tools">
 <div class="logo" id="logo">HTML<span>Tutorial</span></div>
-{% include "tutoapp/site_nav.html" %}
 <div class="langs" id="langs"><button data-l="html" class="on">HTML</button><button data-l="css">CSS</button><button data-l="js">JavaScript</button><button data-l="py">Python</button><button data-l="cs">C#</button><button data-l="ds">Data Science</button><button data-l="mt">Manual Testing</button></div>
 <div class="views" id="views" style="display:none"><button data-v="lesson">Lesson</button><button data-v="code">Code</button><button data-v="out">Output</button><button data-v="all" class="on">All</button></div>
-</header>
+</div>
 <div id="app" class="v-lesson">
 <aside id="side" aria-label="Course navigation">
 <input id="q" type="search" placeholder="Search lessons…" aria-label="Search lessons"><div class="nav-tools"><button type="button" id="expandAll">Expand all</button><button type="button" id="collapseAll">Collapse all</button></div>
@@ -183,8 +198,8 @@ body:not([data-lang="py"]):not([data-lang="cs"]):not([data-lang="ds"]) #pyout{di
 <div class="editor-collapse"><strong>Try It Yourself</strong><button type="button" id="hideEditor" aria-label="Hide editor">− Hide</button></div>
 <div class="pane" id="edp"><div class="ph"><span>Editor</span><button id="run">Run ▶</button><button id="reset">Reset</button></div><textarea id="ed" spellcheck="false" aria-label="HTML code editor"></textarea></div>
 <div class="pane" id="outp"><div class="ph"><span>Output</span></div><iframe id="out" title="Output" sandbox="allow-scripts allow-forms"></iframe><pre id="pyout" aria-live="polite"></pre></div>
-</section>
 <aside id="adrail" aria-label="Advertisement space"><div class="adbox"><small>ADVERTISEMENT</small><span>Ad space</span><small>Responsive 300 × 250</small></div><div class="adbox adbox2"><small>ADVERTISEMENT</small><span>Ad space</span></div></aside>
+</section>
 </div>
 </div>
 <script>
@@ -1892,6 +1907,7 @@ function hideTryEditor(){setView('lesson')}
 document.getElementById('hideEditor').addEventListener('click',hideTryEditor);
 hideTryEditor();
 </script>
-<script src="/static/tutoapp/site-nav.js"></script>
+<script src="/static/tutoapp/site-nav.js?v=20261116-nav3"></script>
+{% include "tutoapp/site_footer.html" %}
 </body>
 </html>

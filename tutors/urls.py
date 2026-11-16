@@ -17,14 +17,23 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from tutoapp.views import (
-    compiler_execute, compiler_languages, compiler_page, course_page, home,
-    java, java_compile, practice_catalog, practice_page, practice_submit,
-    google_site_verification, resume_ai_ats_audit, resume_ai_suggest_responsibilities, resume_builder_page, resume_hub, resume_role, resume_sitemap, robots_txt, saved_programs, tutorials,
+    about_page, ads_txt, compiler_execute, compiler_languages, compiler_page, contact_page, course_page, dashboard, home,
+    java, java_compile, practice_catalog, practice_page, practice_submit, privacy_page, terms_page,
+    google_site_verification, marketing_sandbox_showcase, resume_ai_ats_audit, resume_ai_suggest_responsibilities, resume_builder_page, resume_hub, resume_role, resume_sitemap, robots_txt, saved_programs, tutorials, dv360_page, cm360_page,
+    auth_otp_start, auth_otp_verify, auth_otp_verify_link, auth_otp_complete, auth_session, auth_email_login, auth_logout,
 )
 
 urlpatterns = [
     path('', home, name='home'),
+    path('about/', about_page, name='about'),
+    path('contact/', contact_page, name='contact'),
+    path('privacy/', privacy_page, name='privacy'),
+    path('terms/', terms_page, name='terms'),
+    path('dashboard/', dashboard, name='dashboard'),
     path('tutorials/', tutorials, name='tutorials'),
+    path('dv360/', dv360_page, name='dv360'),
+    path('cm360/', cm360_page, name='cm360'),
+    path('marketing-sandboxes/', marketing_sandbox_showcase, name='marketing_sandbox_showcase'),
     path('html/', course_page, {'course_name': 'html'}, name='html_course'),
     path('css/', course_page, {'course_name': 'css'}, name='css_course'),
     path('javascript/', course_page, {'course_name': 'javascript'}, name='javascript_course'),
@@ -41,6 +50,7 @@ urlpatterns = [
     path('resume/<slug:slug>/', resume_role, name='resume_role'),
     path('sitemap.xml', resume_sitemap, name='resume_sitemap'),
     path('robots.txt', robots_txt, name='robots_txt'),
+    path('ads.txt', ads_txt, name='ads_txt'),
     path('google25bab95f8df852e0.html', google_site_verification, name='google_site_verification'),
     path('api/ai/suggest-responsibilities', resume_ai_suggest_responsibilities, name='resume_ai_suggest_responsibilities'),
     path('api/ai/ats-audit', resume_ai_ats_audit, name='resume_ai_ats_audit'),
@@ -50,5 +60,12 @@ urlpatterns = [
     path('api/practice/catalog/', practice_catalog, name='practice_catalog'),
     path('api/practice/submit/', practice_submit, name='practice_submit'),
     path('api/java/compile/', java_compile, name='java_compile'),
+    path('api/auth/otp/start/', auth_otp_start, name='auth_otp_start'),
+    path('api/auth/otp/verify/', auth_otp_verify, name='auth_otp_verify'),
+    path('api/auth/otp/verify-link/', auth_otp_verify_link, name='auth_otp_verify_link'),
+    path('api/auth/otp/complete/', auth_otp_complete, name='auth_otp_complete'),
+    path('api/auth/session/', auth_session, name='auth_session'),
+    path('api/auth/login/', auth_email_login, name='auth_email_login'),
+    path('api/auth/logout/', auth_logout, name='auth_logout'),
     path('admin/', admin.site.urls),
 ]

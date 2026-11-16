@@ -1,0 +1,37 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "tutoapp/adsense-script.html" %}
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-6776941375498143">
+  <meta name="description" content="Terms of use for OWCUS Tutorials learning content, tools, accounts, and services.">
+  <title>Terms of Use | OWCUS Tutorials</title>
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
+</head>
+<body>
+  <header class="legal-header"><a class="legal-brand" href="/">OWCUS</a>{% include "tutoapp/site_nav_clean.html" %}</header>
+  <main class="legal-main">
+    <span class="legal-kicker">Terms</span>
+    <h1>Terms of Use</h1>
+    <p class="legal-updated">Last updated: November 15, 2026</p>
+    <p class="legal-lead">By using OWCUS Tutorials, you agree to use the site responsibly and to follow these terms.</p>
+    <section class="legal-card">
+      <h2>Educational use</h2>
+      <p>OWCUS provides tutorials, examples, practice exercises, resume resources, and browser-based tools for learning. Examples are provided for educational purposes and should be reviewed before use in production systems.</p>
+      <h2>Accounts</h2>
+      <p>You are responsible for keeping your account access secure and for activity performed through your account. Do not share passwords or verification codes. We may restrict access where necessary to protect the site, users, or services.</p>
+      <h2>Acceptable use</h2>
+      <ul><li>Do not attempt to disrupt, overload, scrape, or compromise the site.</li><li>Do not use code runners to submit malware, abuse external systems, or evade safeguards.</li><li>Do not upload content that infringes rights, contains unlawful material, or exposes private data.</li><li>Do not misrepresent OWCUS content as an official certification or guarantee of employment.</li></ul>
+      <h2>Content and intellectual property</h2>
+      <p>OWCUS and its licensors retain rights in the site’s original design, text, code examples, branding, and software. You may use lessons for personal learning and may adapt examples for your own projects subject to applicable law and any license notice on the relevant material.</p>
+      <h2>Availability and changes</h2>
+      <p>Features may change, be paused, or be removed as the site develops. We aim to keep content useful and available, but do not promise that every tool or example will always be error-free or available.</p>
+      <h2>Contact</h2>
+      <p>Questions about these terms can be sent to <a href="mailto:contact@owcus.com">contact@owcus.com</a>.</p>
+    </section>
+  </main>
+  {% include "tutoapp/site_footer.html" %}
+</body>
+</html>

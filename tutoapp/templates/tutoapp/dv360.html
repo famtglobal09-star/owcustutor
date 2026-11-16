@@ -1,0 +1,24 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "tutoapp/adsense-script.html" %}
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google-adsense-account" content="ca-pub-6776941375498143">
+  <title>Display &amp; Video 360 Sandbox</title>
+  <link rel="stylesheet" href="{% static 'tutoapp/cm360/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
+  <style>
+    .brand span{color:#b58b27}.nav-tag{margin:20px 12px 8px;color:#87938f;font-size:9px;font-weight:700;letter-spacing:1px}.dv-accent{background:#f8f4e9!important;color:#78601d!important}.dv-accent b{color:#967628!important}.flow-mini{display:flex;gap:8px;align-items:center;color:#718079;font-size:11px;margin:14px 0 20px}.flow-mini span{background:#f2f4f2;border-radius:5px;padding:8px 11px}.flow-mini strong{color:#a5b0aa;font-weight:400}.placement-preview{border:1px solid #e1e7e4;border-radius:8px;padding:17px;background:#f8faf9;max-width:430px}.yt-head{font-weight:bold;border-bottom:1px solid #e4eae6;padding-bottom:11px;margin-bottom:12px}.mock-ad{height:190px;background:linear-gradient(140deg,#244b3c,#99c8b0);border-radius:6px;color:white;display:grid;place-items:center}.mock-ad img,.mock-ad video{width:100%;height:100%;object-fit:contain}.mock-copy{font-size:12px;padding:9px 0}.fake-chip{border:1px solid #dbe3df;border-radius:20px;padding:6px 10px;font-size:10px;color:#5d6b65}@media(max-width:650px){.flow-mini{flex-wrap:wrap;gap:6px}.flow-mini strong{display:none}.flow-mini span{padding:7px 9px}.greeting{align-items:flex-start;gap:14px;flex-direction:column}.greeting .btn{width:100%}}
+  </style>
+</head>
+<body>
+  <aside class="rail"><div class="brand">DV<span>360</span></div><nav id="nav">
+    <button class="active" data-page="overview"><b>◉</b> Overview</button><button data-page="partners"><b>♣</b> Partners</button><button data-page="advertisers"><b>▣</b> Advertisers</button><button data-page="campaigns"><b>▤</b> Campaigns &amp; IOs</button><button data-page="lineitems"><b>▥</b> Line items</button><button data-page="creatives"><b>✧</b> Creatives</button><button data-page="placements"><b>▹</b> Ad preview</button><button data-page="reports"><b>▥</b> Reports</button>
+  </nav><div class="rail-bottom"><span class="avatar">S</span><span>Sandbox account<br><small>Local workspace</small></span></div></aside>
+  <main><header><div><span class="eyebrow">DISPLAY &amp; VIDEO 360</span><h1 id="page-title">Overview</h1></div><div class="header-right"><span class="local"><i></i> Local sandbox</span><a class="btn small" href="/">Home</a><a class="btn small" href="/cm360/">CM360</a></div></header><div id="content"></div></main><div id="modal-root"></div><div id="toast" class="toast" role="status"></div>
+  <script src="{% static 'tutoapp/dv360/app.js' %}"></script>
+  <script type="module" src="{% static 'tutoapp/site-auth.js' %}?v=20261115-42"></script>
+  {% include "tutoapp/site_footer.html" %}
+</body>
+</html>
