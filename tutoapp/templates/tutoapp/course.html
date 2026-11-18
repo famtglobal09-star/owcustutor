@@ -8,15 +8,17 @@
 <title>{{ course_title|default:"HTML Tutorials — Learn HTML with Live Examples" }}</title>
 <meta name="description" content="{{ course_description|default:"Learn programming with detailed explanations, examples, interactive editor and live output." }}">
 <meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://www.owcus.com{{ request.path }}">
 <meta name="theme-color" content="#0b7a5a">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Web and Programming Tutorials">
-<meta property="og:title" content="Free Programming Tutorials: HTML, CSS, JavaScript, Python, C# and Data Science">
-<meta property="og:description" content="Learn HTML with detailed explanations, examples, interactive editor and live output.">
+<meta property="og:site_name" content="OWCUS">
+<meta property="og:title" content="{{ course_title|default:'OWCUS Programming Tutorial' }}">
+<meta property="og:description" content="{{ course_description|default:'Learn programming with detailed explanations, examples, interactive editor and live output.' }}">
+<meta property="og:url" content="https://www.owcus.com{{ request.path }}">
 <meta name="twitter:card" content="summary">
 <link rel="stylesheet" href="/static/tutoapp/site-nav.css?v=20261116-responsive">
 <link rel="stylesheet" href="/static/tutoapp/legal.css">
-<script type="application/ld+json" id="ld">{"@context":"https://schema.org","@type":"WebSite","name":"Web and Programming Tutorials","description":"Free programming tutorials with live examples and outputs.","inLanguage":"en"}</script>
+<script type="application/ld+json" id="ld">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.owcus.com/#organization","name":"OWCUS","url":"https://www.owcus.com/"},{"@type":"WebSite","@id":"https://www.owcus.com/#website","name":"OWCUS","url":"https://www.owcus.com/","publisher":{"@id":"https://www.owcus.com/#organization"},"inLanguage":"en"}]}</script>
 <style>
 :root{--bg:#fff;--fg:#1f2933;--mut:#52606d;--side:#f3f6f5;--bd:#dde3e1;--br:#0b7a5a;--brd:#095f46;--lt:#e6f4ee;--code:#f6f8f7;--hdr:#0b7a5a;--warn:#fff4e0;--wb:#f59e0b;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -1920,7 +1922,7 @@ function seoUpdate(){
   if(!isOv)bc.push([t,base+location.hash]);
   var old=c.querySelector('nav.bc');if(old)old.remove();
   c.insertAdjacentHTML('afterbegin','<nav class="bc" aria-label="Breadcrumb">'+bc.map(function(x,i){return i<bc.length-1?'<a href="'+x[1]+'">'+esc(x[0])+'</a> › ':esc(x[0])}).join('')+'</nav>');
-  var page=isOv?{'@type':'CollectionPage',name:t,description:d,inLanguage:'en'}:{'@type':'TechArticle',headline:t,description:d,inLanguage:'en',about:D.nm,dateModified:'2026-11-02',publisher:{'@type':'Organization',name:'Web and Programming Tutorials'}};
+  var page=isOv?{'@type':'CollectionPage',name:t,description:d,inLanguage:'en'}:{'@type':'TechArticle',headline:t,description:d,inLanguage:'en',about:D.nm,dateModified:'2026-11-02',publisher:{'@type':'Organization',name:'OWCUS',url:'https://www.owcus.com/'}};
   var ld=$('#ld');if(ld)ld.textContent=JSON.stringify({'@context':'https://schema.org','@graph':[page,{'@type':'BreadcrumbList',itemListElement:bc.map(function(x,i){return {'@type':'ListItem',position:i+1,name:x[0],item:x[1]}})}]});
 }
 

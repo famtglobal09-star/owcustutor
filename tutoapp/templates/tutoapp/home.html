@@ -6,10 +6,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-adsense-account" content="ca-pub-6776941375498143">
-  <meta name="description" content="Explore Owcus tutorials with guided chapters, examples, and practical lessons.">
-  <title>Explore Owcus Tutorials</title>
+  <meta name="description" content="OWCUS is an online learning platform for practical programming tutorials, coding practice, software testing, resume building, and career development.">
+  <title>OWCUS &ndash; Online Learning, Coding Practice, Software Testing &amp; Career Development.</title>
+  {% include "tutoapp/seo_head.html" with seo_title="OWCUS – Online Learning, Coding Practice, Software Testing & Career Development." seo_description="OWCUS is an online learning platform for practical programming tutorials, coding practice, software testing, resume building, and career development." %}
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.owcus.com/#organization","name":"OWCUS","url":"https://www.owcus.com/"},{"@type":"WebSite","@id":"https://www.owcus.com/#website","name":"OWCUS","url":"https://www.owcus.com/","publisher":{"@id":"https://www.owcus.com/#organization"},"description":"OWCUS is an online learning platform for practical programming tutorials, coding practice, software testing, resume building, and career development.","inLanguage":"en"}]}</script>
 <link rel="stylesheet" href="{% static 'tutoapp/landing.css' %}">
-<link rel="stylesheet" href="{% static 'tutoapp/landing-polish.css' %}?v=20261116-workspace-showcase">
+<link rel="stylesheet" href="{% static 'tutoapp/landing-polish.css' %}?v=20261117-course-title-alignment">
 <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
 <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
 <style>.card-java .card-visual{background:linear-gradient(135deg,#c85b2c,#352335)}</style>
@@ -24,7 +26,7 @@
     <section class="landing-intro premium-hero-home">
       <div class="hero-copy"><p class="eyebrow">Owcus learning library</p>
       <h1>Learn the skill.<br><em>Build the future.</em></h1>
-      <p>One focused workspace for guided tutorials, hands-on practice, coding tools, career-ready resumes, and modern marketing sandboxes.</p>
+      <p>OWCUS is one focused workspace for guided programming tutorials, hands-on coding practice, software testing skills, career-ready resumes, and modern marketing sandboxes.</p>
       <label class="search-wrap" for="course-search"><span>⌕</span><input id="course-search" type="search" placeholder="Search courses..." autocomplete="off"></label>
       <div class="hero-actions"><a class="primary-button" href="/tutorials/#overview">Start learning <span>→</span></a><button class="secondary-button hero-auth-button" type="button" data-auth-open="signup">Sign up free <span>→</span></button><button class="hero-signin-button" type="button" data-auth-open="signin">Sign in</button><a class="secondary-button" href="/compiler/">Open compiler <span>↗</span></a></div></div>
       <div class="hero-console" aria-label="Owcus workspace preview"><div class="console-top"><span class="console-dots"><i></i><i></i><i></i></span><span>owcus / workspace</span><span class="console-live"><b></b> live</span></div><div class="console-body"><div class="console-sidebar"><strong>OW</strong><span class="active"></span><span></span><span></span><span></span></div><div class="console-main"><p class="console-label">TODAY'S PATH</p><h2>Build your first portfolio</h2><p class="console-muted">A practical route from fundamentals to a finished career artifact.</p><div class="console-progress"><span><b>04</b> of 08 milestones</span><strong>52%</strong></div><div class="progress-track"><i></i></div><div class="console-steps"><div class="done">✓ <span>Choose a learning path</span></div><div class="done">✓ <span>Practice with real examples</span></div><div>03 <span>Publish your resume</span></div></div></div></div></div>
@@ -70,6 +72,7 @@
   </script>
   <script src="{% static 'tutoapp/landing.js' %}"></script>
   <div class="auth-backdrop" id="auth-modal" hidden><section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title"><button class="auth-close" type="button" data-auth-close aria-label="Close sign in dialog">×</button><div class="auth-kicker">OWCUS ACCOUNT</div><h2 id="auth-title">Welcome back</h2><p class="auth-subtitle">Save your learning progress, practice results and resume work in one place.</p><div class="auth-tabs" role="tablist"><button type="button" data-auth-tab="signin" class="active">Sign in</button><button type="button" data-auth-tab="signup">Sign up</button></div><div class="auth-user-state" data-auth-user hidden><span class="auth-avatar" data-auth-avatar>U</span><div><strong data-auth-name>User</strong><small data-auth-email></small></div><button type="button" data-auth-signout>Sign out</button></div><div data-auth-form><button class="google-auth-button" type="button" data-google-auth><span class="google-g">G</span> Continue with Google</button><div class="auth-divider"><span>or use your email</span></div><label class="auth-label" for="auth-name" data-auth-name-field>Your name</label><input class="auth-input" id="auth-name" type="text" placeholder="Your name" autocomplete="name" data-auth-name-input><label class="auth-label" for="auth-email">Email address</label><input class="auth-input" id="auth-email" type="email" placeholder="you@example.com" autocomplete="email" data-auth-email-input required><button class="auth-submit-button" type="button" data-email-auth>Send one-time email link</button><p class="auth-message" data-auth-message role="status"></p></div></section></div>
+  <script>document.addEventListener('DOMContentLoaded', () => document.getElementById('auth-modal')?.remove());</script>
   <script src="{% static 'tutoapp/site-nav.js' %}?v=20261116-nav3"></script>
 </body>
 </html>

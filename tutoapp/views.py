@@ -2,17 +2,23 @@ import json
 import logging
 import os
 import secrets
+import shutil
+import subprocess
+import tempfile
 import time
 from datetime import timedelta
+from html import escape
 from urllib import request as urlrequest
 from urllib.error import HTTPError, URLError
 
 from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.password_validation import validate_password
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -21,15 +27,24 @@ from django.views.decorators.http import require_http_methods, require_POST
 from django.utils import timezone
 from django.urls import reverse
 
-from .models import EmailVerificationChallenge, PracticeSubmission, SavedProgram
+from .models import EmailVerificationChallenge, FirebaseIdentity, PracticeSubmission, SavedProgram
 from .resume_catalog import EXPERIENCE_OPTIONS, ROLE_BY_SLUG, ROLE_CATALOG, ROLE_GROUPS, role_content
 
 logger = logging.getLogger(__name__)
 
+try:
+    import firebase_admin
+    from firebase_admin import auth as firebase_auth
+    from firebase_admin import credentials as firebase_credentials
+except ImportError:
+    firebase_admin = None
+    firebase_auth = None
+    firebase_credentials = None
+
 
 LANGUAGES = [
     {'id': 'python', 'label': 'Python 3', 'runtime': 'Judge0 Python 3', 'mode': 'remote', 'extension': '.py'},
-    {'id': 'javascript', 'label': 'JavaScript', 'runtime': 'Judge0 Node.js', 'mode': 'remote', 'extension': '.js'},
+    {'id': 'javascript', 'label': 'JavaScript', 'runtime': 'Browser sandbox', 'mode': 'browser', 'extension': '.js'},
     {'id': 'java', 'label': 'Java', 'runtime': 'Judge0 OpenJDK', 'mode': 'remote', 'extension': '.java'},
     {'id': 'c', 'label': 'C', 'runtime': 'Judge0 GCC', 'mode': 'remote', 'extension': '.c'},
     {'id': 'cpp', 'label': 'C++', 'runtime': 'Judge0 G++', 'mode': 'remote', 'extension': '.cpp'},
@@ -50,7 +65,7 @@ LANGUAGE_IDS = {
 STARTERS = {
     'python': 'name = input("Name: ")\nprint(f"Hello, {name}!")',
     'javascript': 'const name = "OWCUS";\nconsole.log(`Hello, ${name}!`);',
-    'java': 'import java.util.Scanner;\n\npublic class Main {\n  public static void main(String[] args) {\n    Scanner input = new Scanner(System.in);\n    System.out.println("Hello, " + input.nextLine());\n  }\n}',
+    'java': 'import java.util.Scanner;\n\npublic class Main {\n  public static void main(String[] args) {\n    Scanner input = new Scanner(System.in);\n    String name = input.hasNextLine() ? input.nextLine() : "OWCUS";\n    System.out.println("Hello, " + name);\n  }\n}',
     'c': '#include <stdio.h>\n\nint main(void) {\n    printf("Hello, OWCUS!\\n");\n    return 0;\n}',
     'cpp': '#include <iostream>\n\nint main() {\n    std::cout << "Hello, OWCUS!\\n";\n}',
     'csharp': 'using System;\n\nConsole.WriteLine("Hello, OWCUS!");',
@@ -85,6 +100,7 @@ def privacy_page(request):
 def terms_page(request):
     return render(request, 'tutoapp/terms.html')
 
+@login_required(login_url='/?auth=required')
 def dashboard(request):
     return render(request, 'tutoapp/dashboard.html')
 
@@ -163,11 +179,11 @@ def resume_role(request, slug):
         '@type': 'WebPage',
         'name': f"{role['title']} Resume Example",
         'description': f"ATS-friendly {role['title']} resume example and career guidance.",
-        'url': request.build_absolute_uri(),
+        'url': f'https://www.owcus.com{reverse("resume_role", kwargs={"slug": role["slug"]})}',
         'breadcrumb': {
             '@type': 'BreadcrumbList',
             'itemListElement': [
-                {'@type': 'ListItem', 'position': 1, 'name': 'Resume Examples', 'item': request.build_absolute_uri('/resume/')},
+                {'@type': 'ListItem', 'position': 1, 'name': 'Resume Examples', 'item': 'https://www.owcus.com/resume/'},
                 {'@type': 'ListItem', 'position': 2, 'name': role['category']},
                 {'@type': 'ListItem', 'position': 3, 'name': role['title']},
             ],
@@ -184,17 +200,18 @@ def resume_sitemap(request):
     urls = [
         '/', '/about/', '/contact/', '/privacy/', '/terms/', '/tutorials/', '/html/', '/css/', '/javascript/', '/python/',
         '/csharp/', '/data-science/', '/manual-testing/', '/practical-skills/',
-        '/java/', '/compiler/', '/practice/', '/resume-builder/', '/resume/',
+        '/java/', '/compiler/', '/practice/', '/resume-builder/', '/resume/', '/marketing-sandboxes/', '/dv360/', '/cm360/',
     ] + [f"/resume/{role['slug']}/" for role in ROLE_CATALOG]
     body = '<?xml version="1.0" encoding="UTF-8"?>' + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-    body += ''.join(f'<url><loc>{request.build_absolute_uri(path)}</loc></url>' for path in urls)
+    canonical_base = 'https://www.owcus.com'
+    body += ''.join(f'<url><loc>{escape(canonical_base + path)}</loc></url>' for path in urls)
     body += '</urlset>'
     return HttpResponse(body, content_type='application/xml')
 
 
 def robots_txt(request):
     return HttpResponse(
-        f'User-agent: *\nAllow: /\nSitemap: {request.build_absolute_uri("/sitemap.xml")}\n',
+        'User-agent: *\nAllow: /\nDisallow: /dashboard/\nDisallow: /admin/\nSitemap: https://www.owcus.com/sitemap.xml\n',
         content_type='text/plain',
     )
 
@@ -241,6 +258,10 @@ def auth_otp_start(request):
     if recent >= OTP_MAX_PER_HOUR or (latest and (now - latest.created_at).total_seconds() < OTP_RESEND_SECONDS):
         return JsonResponse({'ok': True, 'message': 'A verification code was recently sent. Please wait before requesting another code.'})
 
+    if settings.EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend' and not settings.EMAIL_HOST_PASSWORD:
+        logger.error('OWCUS verification email is not configured: ZOHO_EMAIL_PASSWORD is missing.')
+        return JsonResponse({'ok': False, 'error': 'Email verification is temporarily unavailable because the email service is not configured.'}, status=503)
+
     link_token = secrets.token_urlsafe(32)
     challenge = EmailVerificationChallenge.objects.create(email=email, full_name=full_name, purpose=purpose, code_hash=make_password(secrets.token_urlsafe(24)), link_token_hash=make_password(link_token), expires_at=now + timedelta(seconds=OTP_TTL_SECONDS))
     verification_url = request.build_absolute_uri(f'{reverse("home")}?verify={challenge.pk}&token={link_token}')
@@ -285,27 +306,31 @@ def auth_otp_verify_link(request):
 @require_POST
 def auth_otp_complete(request):
     payload = _json_body(request) or {}
-    challenge = EmailVerificationChallenge.objects.filter(pk=payload.get('challenge_id')).first()
     password = str(payload.get('password') or '')
-    if not challenge or not challenge.verified_at or challenge.used_at or challenge.expires_at <= timezone.now():
-        return JsonResponse({'ok': False, 'error': 'Verify your email again before creating a password.'}, status=400)
     if password != str(payload.get('confirm_password') or ''):
         return JsonResponse({'ok': False, 'error': 'Passwords do not match.'}, status=400)
     try:
         validate_password(password)
     except ValidationError as error:
         return JsonResponse({'ok': False, 'error': ' '.join(error.messages)}, status=400)
-    user_model = get_user_model()
-    user = user_model.objects.filter(email__iexact=challenge.email).first()
-    if challenge.purpose == EmailVerificationChallenge.REGISTRATION:
-        if user:
-            return JsonResponse({'ok': False, 'error': 'An account already exists for this email. Please sign in.'}, status=409)
-        user = user_model.objects.create_user(username=challenge.email, email=challenge.email, password=password, first_name=challenge.full_name)
-    elif user:
-        user.set_password(password)
-        user.save(update_fields=['password'])
-    challenge.used_at = timezone.now()
-    challenge.save(update_fields=['used_at'])
+    with transaction.atomic():
+        challenge = EmailVerificationChallenge.objects.select_for_update().filter(pk=payload.get('challenge_id')).first()
+        now = timezone.now()
+        if not challenge or not challenge.verified_at or challenge.used_at or challenge.expires_at <= now:
+            return JsonResponse({'ok': False, 'error': 'Verify your email again before creating a password.'}, status=400)
+        user_model = get_user_model()
+        user = user_model.objects.select_for_update().filter(email__iexact=challenge.email).first()
+        if challenge.purpose == EmailVerificationChallenge.REGISTRATION:
+            if user:
+                return JsonResponse({'ok': False, 'error': 'An account already exists for this email. Please sign in.'}, status=409)
+            user = user_model.objects.create_user(username=challenge.email, email=challenge.email, password=password, first_name=challenge.full_name)
+        elif not user or not user.is_active:
+            return JsonResponse({'ok': False, 'error': 'We could not reset that account. Please contact support.'}, status=400)
+        else:
+            user.set_password(password)
+            user.save(update_fields=['password'])
+        challenge.used_at = now
+        challenge.save(update_fields=['used_at'])
     if user:
         login(request, user)
     return JsonResponse({'ok': True, 'message': 'Password saved successfully.', 'user': {'email': challenge.email, 'name': challenge.full_name}})
@@ -315,7 +340,13 @@ def auth_otp_complete(request):
 def auth_session(request):
     if not request.user.is_authenticated:
         return JsonResponse({'authenticated': False})
-    return JsonResponse({'authenticated': True, 'user': {'email': request.user.email, 'name': request.user.first_name or request.user.username}})
+    identity = getattr(request.user, 'firebase_identity', None)
+    return JsonResponse({'authenticated': True, 'user': {
+        'uid': identity.firebase_uid if identity else '',
+        'email': request.user.email,
+        'name': (identity.display_name if identity else '') or request.user.first_name or request.user.username,
+        'photoURL': identity.photo_url if identity else '',
+    }})
 
 
 @require_POST
@@ -327,6 +358,61 @@ def auth_email_login(request):
         return JsonResponse({'ok': False, 'error': 'Email or password is incorrect.'}, status=401)
     login(request, user)
     return JsonResponse({'ok': True, 'user': {'email': user.email, 'name': user.first_name or user.username}})
+
+
+def _firebase_admin_auth():
+    if firebase_admin is None or not settings.FIREBASE_ADMIN_CREDENTIALS:
+        return None
+    try:
+        app = firebase_admin.get_app()
+    except ValueError:
+        credential_path = settings.FIREBASE_ADMIN_CREDENTIALS
+        app = firebase_admin.initialize_app(
+            firebase_credentials.Certificate(credential_path),
+            {'projectId': settings.FIREBASE_PROJECT_ID},
+        )
+    return firebase_auth
+
+
+@require_POST
+def auth_firebase_login(request):
+    payload = _json_body(request) or {}
+    id_token = str(payload.get('id_token') or '').strip()
+    if not id_token:
+        return JsonResponse({'ok': False, 'error': 'Firebase ID token is required.'}, status=400)
+    try:
+        firebase = _firebase_admin_auth()
+        if firebase is None:
+            return JsonResponse({'ok': False, 'error': 'Google sign-in is not configured on the server.'}, status=503)
+        decoded = firebase.verify_id_token(id_token, check_revoked=True)
+        uid = str(decoded.get('uid') or '')
+        email = _normalise_email(decoded.get('email'))
+        if not uid or not email or not decoded.get('email_verified', False):
+            return JsonResponse({'ok': False, 'error': 'Google returned an unverified account.'}, status=401)
+    except Exception:
+        logger.exception('Firebase ID token verification failed')
+        return JsonResponse({'ok': False, 'error': 'Google sign-in could not be verified. Please try again.'}, status=401)
+
+    user_model = get_user_model()
+    identity = FirebaseIdentity.objects.select_related('user').filter(firebase_uid=uid).first()
+    user = identity.user if identity else user_model.objects.filter(email__iexact=email).first()
+    display_name = str(decoded.get('name') or email.split('@', 1)[0])[:150]
+    photo_url = str(decoded.get('picture') or '')[:500]
+    if user is None:
+        username = f'firebase_{uid}'
+        user = user_model.objects.create_user(username=username, email=email, first_name=display_name)
+    elif not user.is_active:
+        return JsonResponse({'ok': False, 'error': 'This account has been disabled.'}, status=403)
+    user.email = email
+    if display_name and not user.first_name:
+        user.first_name = display_name
+    user.save(update_fields=['email', 'first_name'])
+    FirebaseIdentity.objects.update_or_create(
+        user=user,
+        defaults={'firebase_uid': uid, 'email': email, 'display_name': display_name, 'photo_url': photo_url, 'provider': 'google'},
+    )
+    login(request, user)
+    return JsonResponse({'ok': True, 'user': {'uid': uid, 'email': email, 'name': display_name, 'photoURL': photo_url}})
 
 
 @require_POST
@@ -429,12 +515,60 @@ def _judge0_execute(language, source, stdin=''):
         return {'ok': False, 'status': 'runner-error', 'error': 'The isolated runner returned invalid JSON.'}, 502
 
 
+def _local_java_execute(source, stdin=''):
+    """Run Java only for local DEBUG development when a JDK is installed.
+
+    Production requests must use Judge0 so submitted code is isolated from the
+    Django host. This fallback is intentionally disabled when DEBUG is false.
+    """
+    if not settings.DEBUG:
+        return {'ok': False, 'status': 'unavailable', 'error': 'Java execution requires a private isolated runner in production.'}, 503
+    javac = shutil.which('javac')
+    java = shutil.which('java')
+    if not javac or not java:
+        return {'ok': False, 'status': 'unavailable', 'error': 'A local Java JDK was not found. Configure JUDGE0_URL or install a JDK.'}, 503
+    started = time.perf_counter()
+    with tempfile.TemporaryDirectory(prefix='owcus-java-') as workdir:
+        source_path = os.path.join(workdir, 'Main.java')
+        with open(source_path, 'w', encoding='utf-8', newline='') as source_file:
+            source_file.write(source)
+        try:
+            compile_result = subprocess.run(
+                [javac, source_path], cwd=workdir, capture_output=True, text=True,
+                timeout=10, check=False, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+            )
+        except subprocess.TimeoutExpired:
+            return {'ok': False, 'status': 'time-limit-exceeded', 'error': 'Java compilation exceeded the 10 second limit.'}, 200
+        if compile_result.returncode != 0:
+            return {
+                'ok': True, 'status': 'Compilation Error', 'stdout': '',
+                'stderr': compile_result.stderr or compile_result.stdout,
+                'compile_output': compile_result.stderr or compile_result.stdout,
+                'elapsed_ms': round((time.perf_counter() - started) * 1000),
+            }, 200
+        try:
+            run_result = subprocess.run(
+                [java, '-cp', workdir, 'Main'], cwd=workdir, input=stdin,
+                capture_output=True, text=True, timeout=10, check=False,
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+            )
+        except subprocess.TimeoutExpired:
+            return {'ok': False, 'status': 'time-limit-exceeded', 'error': 'Java execution exceeded the 10 second limit.'}, 200
+    return {
+        'ok': run_result.returncode == 0,
+        'status': 'Accepted' if run_result.returncode == 0 else 'Runtime Error',
+        'stdout': run_result.stdout or '', 'stderr': run_result.stderr or '',
+        'compile_output': '', 'elapsed_ms': round((time.perf_counter() - started) * 1000),
+    }, 200
+
+
 @require_http_methods(['GET'])
 def compiler_languages(request):
     return JsonResponse({
         'languages': LANGUAGES,
         'starters': STARTERS,
         'judge0_configured': bool(os.environ.get('JUDGE0_URL', '').strip()),
+        'local_java_available': bool(settings.DEBUG and shutil.which('javac') and shutil.which('java')),
     })
 
 
@@ -454,7 +588,10 @@ def compiler_execute(request):
         return JsonResponse({'error': 'Source or input is too large.'}, status=413)
     if language in {'html', 'css'}:
         return JsonResponse({'ok': True, 'status': 'browser-preview', 'stdout': '', 'stderr': '', 'preview': True})
-    result, status = _judge0_execute(language, source, stdin)
+    if language == 'java' and not os.environ.get('JUDGE0_URL', '').strip() and request.get_host().split(':', 1)[0] in {'127.0.0.1', 'localhost', '[::1]'}:
+        result, status = _local_java_execute(source, stdin)
+    else:
+        result, status = _judge0_execute(language, source, stdin)
     return JsonResponse(result, status=status)
 
 

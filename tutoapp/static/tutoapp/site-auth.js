@@ -1,7 +1,7 @@
 import { initializeApp, getApp, getApps } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification, browserLocalPersistence, browserSessionPersistence, setPersistence, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, browserLocalPersistence, browserSessionPersistence, setPersistence, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
-const firebaseConfig = { projectId: 'owcus-24e46', appId: '1:585892351412:web:bbc439d0320c8bac7676e1', apiKey: 'AIzaSyCaYcZd17Cx6tsCjJoEATiZVhIqgORwU3g', authDomain: 'owcus-24e46.firebaseapp.com', storageBucket: 'owcus-24e46.firebasestorage.app', messagingSenderId: '585892351412' };
+const firebaseConfig = { projectId: 'owcus-24e46', appId: '1:585892351412:web:bbc439d0320c8bac7676e1', apiKey: 'AIzaSyCaYcZd17Cx6tsCjJoEATiZVhIqgORwU3g', authDomain: 'owcus-24e46.firebaseapp.com', storageBucket: 'owcus-24e46.firebasestorage.app', messagingSenderId: '585892351412', measurementId: 'G-Q0GW28QTFN' };
 const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 // Configure persistence before the header listener or any sign-in operation.
@@ -17,6 +17,7 @@ let otpChallenge = null;
 let otpPurpose = null;
 let otpEmail = '';
 let otpName = '';
+let googleLoginPending = false;
 const escapeHtml = value => String(value ?? '').replace(/[&<>'\"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
 
 const modalMarkup = `<div class="auth-backdrop" data-site-auth-modal hidden><section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="site-auth-title"><button class="auth-close" type="button" data-auth-close aria-label="Close sign in dialog">×</button><div class="auth-kicker">OWCUS ACCOUNT</div><h2 id="site-auth-title">Welcome back</h2><p class="auth-subtitle">Save your learning progress, practice results and resume work in one place.</p><div class="auth-tabs" role="tablist"><button type="button" data-auth-tab="signin" class="active">Sign in</button><button type="button" data-auth-tab="signup">Sign up</button></div><div data-auth-form><button class="google-auth-button" type="button" data-google-auth><span class="google-g">G</span> Continue with Google</button><div class="auth-divider"><span>or use your email</span></div><label class="auth-label" data-auth-name-field>Your name</label><input class="auth-input" type="text" placeholder="Your name" autocomplete="name" data-auth-name-input><label class="auth-label">Email address</label><input class="auth-input" type="email" placeholder="you@example.com" autocomplete="email" data-auth-email-input><label class="auth-label" data-auth-password-label>Password</label><input class="auth-input" type="password" placeholder="At least 6 characters" autocomplete="current-password" data-auth-password-input><label class="auth-label" data-auth-confirm-label>Confirm password</label><input class="auth-input" type="password" placeholder="Repeat your password" autocomplete="new-password" data-auth-confirm-input><button class="auth-submit-button" type="button" data-email-auth>Sign in with email</button><p class="auth-message" data-auth-message role="status"></p></div></section></div>`;
@@ -37,9 +38,6 @@ function ensureModal() {
     reset.style.cssText = 'display:block;margin:8px 0 0 auto;border:0;background:transparent;color:#e67534;font:600 12px system-ui;cursor:pointer;padding:0;';
     modal.querySelector('[data-auth-password-input]').insertAdjacentElement('afterend', reset);
   }
-  const googleButton = modal?.querySelector('[data-google-auth]');
-  googleButton?.remove();
-  modal?.querySelector('.auth-divider')?.remove();
   return modal;
 }
 
@@ -76,6 +74,7 @@ function initCookieConsent() {
 }
 
 function errorText(error) {
+  const detectedCode = error?.code || String(error?.message || '').match(/auth\/[a-z-]+/)?.[0];
   const messages = {
     'auth/invalid-email': 'Enter a valid email address.',
     'auth/email-already-in-use': 'This email already has an account. Sign in instead.',
@@ -87,10 +86,20 @@ function errorText(error) {
     'auth/popup-closed-by-user': 'Google sign-in was closed. Please try again.',
     'auth/cancelled-popup-request': 'Another Google sign-in window is already open.',
     'auth/network-request-failed': 'Unable to connect to Google/Firebase. Please check your internet connection.',
+    'auth/operation-not-supported-in-this-environment': 'Google sign-in is not supported in this browser context. Please use Chrome or Edge in a normal browser tab.',
+    'auth/web-storage-unsupported': 'Browser storage is unavailable. Enable cookies and site data for OWCUS, then try again.',
+    'auth/missing-or-invalid-nonce': 'Google sign-in state expired or was blocked. Start Google sign-in again in the same browser tab.',
+    'auth/redirect-cancelled-by-user': 'Google sign-in was cancelled before the account was selected.',
+    'auth/no-auth-event': 'Google did not return an authentication response. Please try again.',
     'auth/user-disabled': 'This account has been disabled.',
-    'auth/too-many-requests': 'Too many attempts. Please wait and try again.'
+    'auth/too-many-requests': 'Too many attempts. Please wait and try again.',
+    'auth/internal-error': 'Google/Firebase returned an internal error. Please try again.',
+    'auth/operation-not-allowed': 'Google sign-in is not enabled in Firebase Authentication.'
   };
-  return messages[error?.code] || 'Authentication could not be completed. Please try again.';
+  if (messages[detectedCode]) return messages[detectedCode];
+  if (error?.message && error?.status) return error.message;
+  if (detectedCode) return `Google sign-in failed (${detectedCode}). Please try again.`;
+  return error?.message || 'Authentication could not be completed. Please try again.';
 }
 
 function renderSignedOut(container) {
@@ -116,6 +125,15 @@ function renderAuth(user) {
   document.body.classList.toggle('auth-signed-in', Boolean(user));
   document.body.dataset.authReady = 'true';
   if (document.body.dataset.authProtected === 'true' && !user) window.location.replace('/?auth=required');
+}
+
+function normalizeDjangoUser(user) {
+  return {
+    uid: user?.uid || '',
+    email: user?.email || '',
+    displayName: user?.displayName || user?.name || '',
+    photoURL: user?.photoURL || ''
+  };
 }
 
 function setMode(next) {
@@ -180,7 +198,7 @@ function renderPasswordStep() {
   form.querySelector('[data-otp-complete]').onclick = async () => {
     const message = form.querySelector('[data-auth-message]'); const password = form.querySelector('[data-otp-password]').value; const confirm = form.querySelector('[data-otp-confirm]').value;
     if (password.length < 8) { message.textContent = 'Password must be at least 8 characters.'; return; }
-    try { const result = await postAuthApi('/api/auth/otp/complete/', { challenge_id: otpChallenge, password, confirm_password: confirm }); renderAuth(result.user); closeAuth(); showToast(otpPurpose === 'registration' ? 'Account created successfully.' : 'Password reset successful.'); goAfterAuth(); }
+    try { const result = await postAuthApi('/api/auth/otp/complete/', { challenge_id: otpChallenge, password, confirm_password: confirm }); renderAuth(normalizeDjangoUser(result.user)); closeAuth(); showToast(otpPurpose === 'registration' ? 'Account created successfully.' : 'Password reset successful.'); goAfterAuth(); }
     catch (error) { message.textContent = error.message; }
   };
 }
@@ -215,6 +233,41 @@ async function handlePasswordReset() {
   await startOtpFlow('password_reset', email);
 }
 
+async function syncFirebaseUser(user) {
+  const idToken = await user.getIdToken();
+  const session = await postAuthApi('/api/auth/firebase/', { id_token: idToken });
+  return { ...user, uid: session.user.uid, email: session.user.email, displayName: session.user.name, photoURL: session.user.photoURL };
+}
+
+async function handleGoogle() {
+  if (googleLoginPending) return;
+  const modal = ensureModal();
+  const button = modal.querySelector('[data-google-auth]');
+  const message = modal.querySelector('[data-auth-message]');
+  if (!button) return;
+  googleLoginPending = true;
+  button.disabled = true;
+  try {
+    await ensurePersistence();
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const result = await signInWithPopup(auth, provider);
+    const user = await syncFirebaseUser(result.user);
+    renderAuth(user);
+    closeAuth();
+    showToast(`Welcome, ${user.displayName || user.email}.`);
+    goAfterAuth();
+  } catch (error) {
+    console.error('[OWCUS Google sign-in]', error?.code || 'unknown', error?.message || error);
+    message.textContent = errorText(error);
+    try { if (auth.currentUser && error?.status) await signOut(auth); } catch (_) {}
+  } finally {
+    googleLoginPending = false;
+    button.disabled = false;
+    button.innerHTML = '<span class="google-g">G</span> Continue with Google';
+  }
+}
+
 async function handleEmail() {
   const modal = ensureModal();
   const message = modal.querySelector('[data-auth-message]');
@@ -222,34 +275,16 @@ async function handleEmail() {
   const name = modal.querySelector('[data-auth-name-input]').value.trim();
   const password = modal.querySelector('[data-auth-password-input]').value;
   const confirm = modal.querySelector('[data-auth-confirm-input]').value;
-  if (authMode === 'signup') { if (!email) { message.textContent = 'Enter your email address.'; return; } await startOtpFlow('registration', email, name); return; }
+  if (authMode === 'signup') { if (!name || !email) { message.textContent = 'Enter your name and email address.'; return; } await startOtpFlow('registration', email, name); return; }
   if (!email || !password) { message.textContent = 'Enter your email and password.'; return; }
   try {
-    await ensurePersistence();
-    try {
-      const session = await postAuthApi('/api/auth/login/', { email, password });
-      renderAuth(session.user); closeAuth(); showToast(`Welcome back, ${session.user.name || session.user.email}.`); goAfterAuth(); return;
-    } catch (djangoError) {
-      if (djangoError.status !== 401) { message.textContent = djangoError.message; return; }
-    }
-    let result;
-    if (authMode === 'signup') {
-      result = await createUserWithEmailAndPassword(auth, email, password);
-      if (name) await updateProfile(result.user, { displayName: name });
-      await sendEmailVerification(result.user, { url: `${location.origin}${location.pathname}`, handleCodeInApp: false });
-      await signOut(auth);
-      message.textContent = 'Account created. Check your email and click the verification link before signing in.';
-      return;
-    }
-    result = await signInWithEmailAndPassword(auth, email, password);
-    if (!result.user.emailVerified) {
-      await sendEmailVerification(result.user, { url: `${location.origin}${location.pathname}`, handleCodeInApp: false });
-      await signOut(auth);
-      message.textContent = 'Please verify your email first. We sent you a new verification link.';
-      return;
-    }
-    renderAuth(result.user); closeAuth(); showToast(`Welcome back, ${result.user.displayName || result.user.email}.`); goAfterAuth();
-  } catch (error) { message.textContent = errorText(error); }
+    const session = await postAuthApi('/api/auth/login/', { email, password });
+    await signOut(auth);
+    renderAuth(normalizeDjangoUser(session.user));
+    closeAuth();
+    showToast(`Welcome back, ${session.user.name || session.user.email}.`);
+    goAfterAuth();
+  } catch (error) { message.textContent = error.message || 'Unable to sign in.'; }
 }
 
 async function handleSignOut() {
@@ -270,17 +305,15 @@ function init() {
   modal.addEventListener('click', event => { if (event.target === modal) closeAuth(); });
   modal.querySelector('[data-auth-close]').onclick = closeAuth;
   modal.querySelectorAll('[data-auth-tab]').forEach(tab => { tab.onclick = () => setMode(tab.dataset.authTab); });
+  modal.querySelector('[data-google-auth]').onclick = handleGoogle;
   modal.querySelector('[data-email-auth]').onclick = handleEmail;
   modal.querySelector('[data-password-reset]').onclick = handlePasswordReset;
   const pendingSignedOut = sessionGet('owcusSignedOutMessage');
   if (pendingSignedOut || new URLSearchParams(location.search).has('signedout')) { sessionRemove('owcusSignedOutMessage'); showToast(pendingSignedOut || 'You have successfully signed out.'); }
-  // Popup is deliberately the only Google flow. Redirect recovery requires
-  // sessionStorage and produces Firebase's "missing initial state" error in
-  // storage-partitioned browsers.
   // Keep the navigation in its loading state until persistence has completed,
   // so a restored account is never briefly replaced by Login/Sign Up.
   authReady
-    .then(() => { onAuthStateChanged(auth, async user => { if (user) { renderAuth(user); return; } try { const response = await fetch('/api/auth/session/', { credentials: 'same-origin' }); const session = await response.json(); renderAuth(session.authenticated ? session.user : null); } catch (_) { renderAuth(null); } }); consumeVerificationLink(); })
+    .then(() => { onAuthStateChanged(auth, async user => { if (user) { try { renderAuth(await syncFirebaseUser(user)); } catch (error) { renderAuth(null); if (document.body.dataset.authProtected === 'true') showToast(errorText(error), true); } return; } try { const response = await fetch('/api/auth/session/', { credentials: 'same-origin' }); const session = await response.json(); renderAuth(session.authenticated ? normalizeDjangoUser(session.user) : null); } catch (_) { renderAuth(null); } }); consumeVerificationLink(); })
     .catch(() => {
       document.querySelectorAll('[data-site-auth]').forEach(container => {
         container.removeAttribute('data-auth-loading');

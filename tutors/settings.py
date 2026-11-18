@@ -27,6 +27,8 @@ SECRET_KEY = 'django-insecure-fe3aig(w+@u70db)v@1)zcb*d(ogt+haem@a)g^&!n##6tj5u@
 DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+FIREBASE_PROJECT_ID = os.environ.get('FIREBASE_PROJECT_ID', 'owcus-24e46')
+FIREBASE_ADMIN_CREDENTIALS = os.environ.get('FIREBASE_ADMIN_CREDENTIALS', '')
 
 
 # Application definition
@@ -51,6 +53,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Firebase Google sign-in uses a cross-origin OAuth popup. Keep the opener
+# relationship available for that popup while retaining COOP isolation for
+# ordinary cross-origin windows.
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
 
 ROOT_URLCONF = 'tutors.urls'
 
@@ -131,5 +138,6 @@ EMAIL_USE_SSL = True
 EMAIL_USE_TLS = False
 EMAIL_HOST_USER = os.environ.get('ZOHO_EMAIL_USER', 'support@famtglobal.com')
 EMAIL_HOST_PASSWORD = os.environ.get('ZOHO_EMAIL_PASSWORD')
+EMAIL_TIMEOUT = 15
 DEFAULT_FROM_EMAIL = 'support@famtglobal.com'
 SERVER_EMAIL = 'support@famtglobal.com'

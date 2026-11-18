@@ -1,1 +1,2 @@
 Django==5.2.4
+firebase-admin==6.9.0

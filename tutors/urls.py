@@ -20,7 +20,7 @@ from tutoapp.views import (
     about_page, ads_txt, compiler_execute, compiler_languages, compiler_page, contact_page, course_page, dashboard, home,
     java, java_compile, practice_catalog, practice_page, practice_submit, privacy_page, terms_page,
     google_site_verification, marketing_sandbox_showcase, resume_ai_ats_audit, resume_ai_suggest_responsibilities, resume_builder_page, resume_hub, resume_role, resume_sitemap, robots_txt, saved_programs, tutorials, dv360_page, cm360_page,
-    auth_otp_start, auth_otp_verify, auth_otp_verify_link, auth_otp_complete, auth_session, auth_email_login, auth_logout,
+    auth_otp_start, auth_otp_verify, auth_otp_verify_link, auth_otp_complete, auth_session, auth_email_login, auth_firebase_login, auth_logout,
 )
 
 urlpatterns = [
@@ -66,6 +66,7 @@ urlpatterns = [
     path('api/auth/otp/complete/', auth_otp_complete, name='auth_otp_complete'),
     path('api/auth/session/', auth_session, name='auth_session'),
     path('api/auth/login/', auth_email_login, name='auth_email_login'),
+    path('api/auth/firebase/', auth_firebase_login, name='auth_firebase_login'),
     path('api/auth/logout/', auth_logout, name='auth_logout'),
     path('admin/', admin.site.urls),
 ]

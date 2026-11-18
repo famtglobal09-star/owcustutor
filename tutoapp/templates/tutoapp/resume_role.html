@@ -7,7 +7,12 @@
   <meta name="google-adsense-account" content="ca-pub-6776941375498143">
   <title>{{ role.title }} Resume Example | OWCUS</title>
   <meta name="description" content="ATS-friendly {{ role.title }} resume example with summary, skills, projects, achievements, interview tips, and editable templates.">
-  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'resume_role' role.slug %}">
+  <link rel="canonical" href="https://www.owcus.com{% url 'resume_role' role.slug %}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="OWCUS">
+  <meta property="og:title" content="{{ role.title }} Resume Example | OWCUS">
+  <meta property="og:description" content="Explore a practical {{ role.title }} resume example from OWCUS.">
+  <meta property="og:url" content="https://www.owcus.com{% url 'resume_role' role.slug %}">
   <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
   <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
   <style>

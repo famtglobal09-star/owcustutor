@@ -5,8 +5,10 @@
   let languages = [];
   let starters = {};
   let judge0Configured = false;
+  let localJavaAvailable = false;
   let editor = null;
   let currentSource = '';
+  let browserRuntimeMessageHandler = null;
 
   const setStatus = (text, type) => {
     const node = $('#execution-status');
@@ -17,13 +19,20 @@
   function getSource() { return editor ? editor.getValue() : editorElement.value; }
   function setSource(value) { currentSource = value; if (editor) editor.setValue(value); else editorElement.value = value; }
   function languageInfo() { return languages.find(item => item.id === languageSelect.value) || languages[0]; }
+  function showIoTab(tabName) {
+    document.querySelectorAll('.io-tab,.io-panel').forEach(node => node.classList.remove('active'));
+    const tab = document.querySelector(`.io-tab[data-tab="${tabName}"]`);
+    const panel = document.querySelector(`.io-panel[data-panel="${tabName}"]`);
+    if (tab) tab.classList.add('active');
+    if (panel) panel.classList.add('active');
+  }
 
   function setMode() {
     const info = languageInfo();
     const mode = info && info.id === 'python' ? 'python' : info && info.id === 'javascript' ? 'javascript' : info && info.id === 'html' ? 'htmlmixed' : null;
     if (editor && mode) editor.setOption('mode', mode);
     if (info) $('#file-name').textContent = `main${info.extension}`;
-    if (info) $('#runtime-note').textContent = info.mode === 'browser' ? 'Runs inside a sandboxed browser preview.' : `${info.runtime}. ${judge0Configured ? 'Local Judge0 runner is configured.' : 'Configure JUDGE0_URL on the server to enable execution.'}`;
+    if (info) $('#runtime-note').textContent = info.mode === 'browser' ? 'Runs inside a sandboxed browser preview.' : (info.id === 'python' && !judge0Configured ? 'Runs with a browser Python fallback. Configure JUDGE0_URL for server-side execution.' : (info.id === 'java' && !judge0Configured && localJavaAvailable ? 'Runs with the local development JDK. Production requires an isolated Judge0 runner.' : `${info.runtime}. ${judge0Configured ? 'Local Judge0 runner is configured.' : 'Configure JUDGE0_URL on the server to enable execution.'}`));
     $('#preview-wrap').hidden = !(info && info.mode === 'browser');
   }
 
@@ -32,6 +41,45 @@
     if (!info || info.mode !== 'browser') return;
     let source = getSource();
     if (info.id === 'css') source = `<style>${source}</style><main><h1>CSS preview</h1><p>Edit the stylesheet and run again.</p></main>`;
+    if (info.id === 'javascript') {
+      const inputValues = JSON.stringify(String($('#input-panel').value || '').split(/\r?\n/));
+      const safeSource = source.replace(/<\/script/gi, '<\\/script');
+      const escapedSource = JSON.stringify(safeSource);
+      source = `<script>
+        (() => {
+          const values = ${inputValues}; let index = 0; const output = [];
+          const send = (type, value) => parent.postMessage({ source: 'owcus-browser-runtime', type, value: String(value) }, '*');
+          console.log = (...args) => send('output', args.join(' '));
+          console.error = (...args) => send('error', args.join(' '));
+          window.prompt = () => values[index++] || '';
+          window.onerror = (message) => send('error', message);
+          try { (0, eval)(${escapedSource}); send('done', output.join('')); } catch (error) { send('error', error.message || error); }
+        })();
+      <\/script>`;
+      $('#output-panel').textContent = 'Running JavaScript in the browser sandbox…';
+      $('#errors-panel').textContent = '';
+      if (browserRuntimeMessageHandler) window.removeEventListener('message', browserRuntimeMessageHandler);
+      let hasOutput = false;
+      const handler = event => {
+        if (event.source !== $('#preview-frame').contentWindow || event.data?.source !== 'owcus-browser-runtime') return;
+        if (event.data.type === 'output') {
+          if (!hasOutput) { $('#output-panel').textContent = ''; hasOutput = true; }
+          $('#output-panel').textContent += `${event.data.value}\n`;
+        }
+        if (event.data.type === 'error') $('#errors-panel').textContent += `${event.data.value}\n`;
+        if (event.data.type === 'done') {
+          if (!hasOutput) $('#output-panel').textContent = 'Program finished with no output.';
+          setStatus('JavaScript browser runtime ready', '');
+          window.removeEventListener('message', handler);
+          browserRuntimeMessageHandler = null;
+        }
+      };
+      window.addEventListener('message', handler, { once: false });
+      browserRuntimeMessageHandler = handler;
+      $('#preview-frame').srcdoc = source;
+      setStatus('Running JavaScript…', 'busy');
+      return;
+    }
     if (info.id === 'html') source = `${source}<script>document.querySelectorAll('form').forEach(form => form.addEventListener('submit', event => event.preventDefault()));<\/script>`;
     $('#preview-frame').srcdoc = source;
     $('#output-panel').textContent = 'Browser preview updated in the sandboxed frame.';
@@ -77,14 +125,28 @@
   async function run() {
     const info = languageInfo();
     if (!info) return;
+    showIoTab('output');
     if (info.mode === 'browser') { preview(); return; }
     setStatus('Running…', 'busy');
     $('#output-panel').textContent = 'Submitting to the isolated runner…';
     $('#errors-panel').textContent = '';
     const started = performance.now();
     try {
+      if (!judge0Configured && info.id === 'python') {
+        const output = await runPythonInBrowser(getSource(), $('#input-panel').value);
+        $('#output-panel').textContent = output;
+        $('#errors-panel').textContent = 'No errors. Executed in the browser Python runtime.';
+        setStatus(`Python browser runtime · ${Math.round(performance.now() - started)} ms`, '');
+        return;
+      }
       const response = await fetch('/api/compiler/execute/', { method: 'POST', headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')}, body: JSON.stringify({language: info.id, source: getSource(), stdin: $('#input-panel').value}) });
-      const result = await response.json();
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        throw new Error(`Compiler service returned HTTP ${response.status} instead of JSON.`);
+      }
       if (response.status === 503 && info.id === 'python') {
         try {
           const output = await runPythonInBrowser(getSource(), $('#input-panel').value);
@@ -100,9 +162,12 @@
       $('#errors-panel').textContent = result.compile_output || result.stderr || result.error || 'No errors.';
       setStatus(response.ok ? `${result.status || 'Completed'} · ${Math.round(performance.now() - started)} ms` : 'Runner unavailable', response.ok ? '' : 'error');
     } catch (error) {
-      $('#output-panel').textContent = '';
-      $('#errors-panel').textContent = `Request failed: ${error.message}`;
-      setStatus('Request failed', 'error');
+      const message = error instanceof TypeError
+        ? 'Could not connect to the compiler service. Make sure the OWCUS server is running and try again.'
+        : error.message;
+      $('#output-panel').textContent = 'The program did not produce output.';
+      $('#errors-panel').textContent = `Execution error\n\n${message}`;
+      setStatus('Execution error', 'error');
     }
   }
 
@@ -115,12 +180,12 @@
   async function init() {
     const response = await fetch('/api/compiler/languages/');
     const data = await response.json();
-    languages = data.languages; starters = data.starters; judge0Configured = Boolean(data.judge0_configured);
+    languages = data.languages; starters = data.starters; judge0Configured = Boolean(data.judge0_configured); localJavaAvailable = Boolean(data.local_java_available);
     languageSelect.innerHTML = languages.map(item => `<option value="${item.id}">${item.label}</option>`).join('');
     if (window.CodeMirror) { editor = window.CodeMirror.fromTextArea(editorElement, {lineNumbers:true, lineWrapping:true, autoCloseBrackets:true, mode:'python', theme:'default'}); }
     setSource(starters.python); setMode(); loadSaved();
   }
-  languageSelect.addEventListener('change', () => { setSource(starters[languageSelect.value] || ''); setMode(); setStatus('Ready', ''); });
-  $('#run-code').addEventListener('click', run); $('#reset-code').addEventListener('click', () => { setSource(starters[languageSelect.value] || ''); setStatus('Reset', ''); }); $('#copy-code').addEventListener('click', () => navigator.clipboard.writeText(getSource())); $('#download-code').addEventListener('click', download); $('#save-code').addEventListener('click', save); $('#refresh-saved').addEventListener('click', loadSaved); $('#format-code').addEventListener('click', () => setSource(getSource().split('\n').map(line => line.trimEnd()).join('\n'))); $('#maximize-panel').addEventListener('click', () => $('#compiler-panel').classList.toggle('maximized')); $('#minimize-panel').addEventListener('click', () => $('#compiler-panel').classList.toggle('minimized')); $('#clear-preview').addEventListener('click', () => { $('#preview-frame').srcdoc = ''; }); document.querySelectorAll('.io-tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.io-tab,.io-panel').forEach(node => node.classList.remove('active')); tab.classList.add('active'); $(`[data-panel="${tab.dataset.tab}"]`).classList.add('active'); })); document.addEventListener('keydown', event => { if (event.ctrlKey && event.key === 'Enter') { event.preventDefault(); run(); } });
+  languageSelect.addEventListener('change', () => { setSource(starters[languageSelect.value] || ''); setMode(); setStatus('Ready', ''); showIoTab('output'); });
+  $('#run-code').addEventListener('click', run); $('#reset-code').addEventListener('click', () => { setSource(starters[languageSelect.value] || ''); setStatus('Reset', ''); showIoTab('output'); }); $('#copy-code').addEventListener('click', () => navigator.clipboard.writeText(getSource())); $('#download-code').addEventListener('click', download); $('#save-code').addEventListener('click', save); $('#refresh-saved').addEventListener('click', loadSaved); $('#format-code').addEventListener('click', () => setSource(getSource().split('\n').map(line => line.trimEnd()).join('\n'))); $('#maximize-panel').addEventListener('click', () => $('#compiler-panel').classList.toggle('maximized')); $('#minimize-panel').addEventListener('click', () => $('#compiler-panel').classList.toggle('minimized')); $('#clear-preview').addEventListener('click', () => { $('#preview-frame').srcdoc = ''; }); document.querySelectorAll('.io-tab').forEach(tab => tab.addEventListener('click', () => showIoTab(tab.dataset.tab))); document.addEventListener('keydown', event => { if (event.ctrlKey && event.key === 'Enter') { event.preventDefault(); run(); } });
   init();
 }());
