@@ -22,6 +22,9 @@
     .resume-builder-header .header-link{background:#fff;color:#064e3b}
     .resume-builder-host{margin:0;min-width:320px;background:#f8fafc}
     .resume-builder-header .menu-link.active{background:#edf4ff;color:#1d4ed8}
+    /* The site-wide OWCUS header is the single authentication entry point. */
+    .resume-builder-host .owcus-legacy-auth-control,
+    .resume-builder-host .owcus-legacy-auth-modal{display:none!important}
     @media(max-width:800px){.resume-builder-header{padding:0 12px}.resume-builder-header .site-menu{top:64px}}
   </style>
 </head>
@@ -34,6 +37,50 @@
   <div id="root"></div>
   <script src="{% static 'tutoapp/site-nav.js' %}?v=20261116-nav3"></script>
   <script type="module" crossorigin src="{% static 'tutoapp/resume-builder/assets/index-CBai2W5M.js' %}"></script>
+  <script>
+    (() => {
+      const root = document.getElementById('root');
+
+      if (!root) return;
+
+      const openSharedAuth = (mode) => {
+        const trigger = document.querySelector(`[data-auth-open="${mode}"]`);
+        if (trigger) trigger.click();
+      };
+
+      const bridgeResumeBuilderAuth = () => {
+        root.querySelectorAll('button').forEach((button) => {
+          const label = button.textContent.replace(/\s+/g, ' ').trim();
+          const mode = label === 'Sign In' ? 'signin' : label === 'Register' ? 'signup' : '';
+
+          if (!mode) return;
+
+          button.classList.add('owcus-legacy-auth-control');
+          if (button.dataset.owcusAuthBridged === 'true') return;
+
+          button.dataset.owcusAuthBridged = 'true';
+          button.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            openSharedAuth(mode);
+          }, true);
+        });
+
+        root.querySelectorAll('[role="dialog"]').forEach((dialog) => {
+          const text = dialog.textContent.replace(/\s+/g, ' ').trim();
+          if (/Continue with Google|Sign in with email|Create your account/i.test(text)) {
+            dialog.classList.add('owcus-legacy-auth-modal');
+          }
+        });
+      };
+
+      bridgeResumeBuilderAuth();
+      new MutationObserver(bridgeResumeBuilderAuth).observe(root, {
+        childList: true,
+        subtree: true
+      });
+    })();
+  </script>
   {% include "tutoapp/site_footer.html" %}
 </body>
 </html>
