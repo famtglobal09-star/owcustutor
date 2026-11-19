@@ -9,6 +9,11 @@ from .models import EmailVerificationChallenge, SavedProgram
 
 
 class CompilerPlatformTests(TestCase):
+    def test_dashboard_requires_an_authenticated_session(self):
+        response = self.client.get('/dashboard/')
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('auth=required', response['Location'])
+
     def test_playground_pages_render(self):
         self.assertEqual(self.client.get('/compiler/').status_code, 200)
         self.assertEqual(self.client.get('/practice/').status_code, 200)
@@ -105,3 +110,28 @@ class CompilerPlatformTests(TestCase):
         response = self.client.post('/api/auth/otp/verify-link/', data=json.dumps({'challenge_id': query['verify'][0], 'token': query['token'][0]}), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['email'], 'link@example.com')
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend', ALLOWED_HOSTS=['testserver'])
+    def test_password_reset_email_link_updates_existing_password(self):
+        user = User.objects.create_user(username='reset@example.com', email='reset@example.com', password='Old password 123!', first_name='Reset User')
+        start = self.client.post('/api/auth/otp/start/', data=json.dumps({'email': user.email, 'purpose': 'password_reset'}), content_type='application/json')
+        self.assertEqual(start.status_code, 200)
+        self.assertEqual(mail.outbox[0].subject, 'Reset your OWCUS password')
+        link = next(line for line in mail.outbox[0].body.splitlines() if '?verify=' in line)
+        query = parse_qs(urlsplit(link).query)
+        verified = self.client.post('/api/auth/otp/verify-link/', data=json.dumps({'challenge_id': query['verify'][0], 'token': query['token'][0]}), content_type='application/json')
+        self.assertEqual(verified.status_code, 200)
+        complete = self.client.post('/api/auth/otp/complete/', data=json.dumps({'challenge_id': start.json()['challenge_id'], 'password': 'New password 456!', 'confirm_password': 'New password 456!'}), content_type='application/json')
+        self.assertEqual(complete.status_code, 200)
+        user.refresh_from_db()
+        self.assertTrue(user.check_password('New password 456!'))
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_email_password_completion_rejects_mismatch(self):
+        start = self.client.post('/api/auth/otp/start/', data=json.dumps({'email': 'mismatch@example.com', 'purpose': 'registration'}), content_type='application/json')
+        challenge = EmailVerificationChallenge.objects.get(pk=start.json()['challenge_id'])
+        challenge.verified_at = challenge.created_at
+        challenge.save(update_fields=['verified_at'])
+        complete = self.client.post('/api/auth/otp/complete/', data=json.dumps({'challenge_id': challenge.pk, 'password': 'New password 456!', 'confirm_password': 'Different password 789!'}), content_type='application/json')
+        self.assertEqual(complete.status_code, 400)
+        self.assertFalse(User.objects.filter(email='mismatch@example.com').exists())

@@ -198,6 +198,7 @@ function renderPasswordStep() {
   form.querySelector('[data-otp-complete]').onclick = async () => {
     const message = form.querySelector('[data-auth-message]'); const password = form.querySelector('[data-otp-password]').value; const confirm = form.querySelector('[data-otp-confirm]').value;
     if (password.length < 8) { message.textContent = 'Password must be at least 8 characters.'; return; }
+    if (password !== confirm) { message.textContent = 'Passwords do not match.'; return; }
     try { const result = await postAuthApi('/api/auth/otp/complete/', { challenge_id: otpChallenge, password, confirm_password: confirm }); renderAuth(normalizeDjangoUser(result.user)); closeAuth(); showToast(otpPurpose === 'registration' ? 'Account created successfully.' : 'Password reset successful.'); goAfterAuth(); }
     catch (error) { message.textContent = error.message; }
   };

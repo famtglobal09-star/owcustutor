@@ -265,9 +265,14 @@ def auth_otp_start(request):
     link_token = secrets.token_urlsafe(32)
     challenge = EmailVerificationChallenge.objects.create(email=email, full_name=full_name, purpose=purpose, code_hash=make_password(secrets.token_urlsafe(24)), link_token_hash=make_password(link_token), expires_at=now + timedelta(seconds=OTP_TTL_SECONDS))
     verification_url = request.build_absolute_uri(f'{reverse("home")}?verify={challenge.pk}&token={link_token}')
-    delivery_text = f'Click this secure OWCUS verification link to verify your email and create your password:\n\n{verification_url}\n\nThis link expires in 5 minutes. If you did not request this, you can ignore this email.'
+    if purpose == EmailVerificationChallenge.REGISTRATION:
+        subject = 'Verify your OWCUS email and create your password'
+        delivery_text = f'Click this secure OWCUS verification link to verify your email and create your password:\n\n{verification_url}\n\nThis link expires in 5 minutes. If you did not request this, you can ignore this email.'
+    else:
+        subject = 'Reset your OWCUS password'
+        delivery_text = f'Click this secure OWCUS link to verify your email and reset your OWCUS password:\n\n{verification_url}\n\nThis link expires in 5 minutes. If you did not request a password reset, you can ignore this email.'
     try:
-        send_mail('Verify your OWCUS account', delivery_text, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+        send_mail(subject, delivery_text, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
     except Exception:
         logger.exception('OWCUS verification email delivery failed for %s', email)
         challenge.delete()
@@ -294,12 +299,13 @@ def auth_otp_verify(request):
 @require_POST
 def auth_otp_verify_link(request):
     payload = _json_body(request) or {}
-    challenge = EmailVerificationChallenge.objects.filter(pk=payload.get('challenge_id')).first()
-    now = timezone.now()
-    if not challenge or challenge.used_at or challenge.verified_at or challenge.expires_at <= now or not check_password(str(payload.get('token') or ''), challenge.link_token_hash):
-        return JsonResponse({'ok': False, 'error': 'That verification link is invalid or expired.'}, status=400)
-    challenge.verified_at = now
-    challenge.save(update_fields=['verified_at'])
+    with transaction.atomic():
+        challenge = EmailVerificationChallenge.objects.select_for_update().filter(pk=payload.get('challenge_id')).first()
+        now = timezone.now()
+        if not challenge or challenge.used_at or challenge.verified_at or challenge.expires_at <= now or not check_password(str(payload.get('token') or ''), challenge.link_token_hash):
+            return JsonResponse({'ok': False, 'error': 'That verification link is invalid or expired.'}, status=400)
+        challenge.verified_at = now
+        challenge.save(update_fields=['verified_at'])
     return JsonResponse({'ok': True, 'challenge_id': challenge.pk, 'purpose': challenge.purpose, 'email': challenge.email, 'name': challenge.full_name})
 
 
