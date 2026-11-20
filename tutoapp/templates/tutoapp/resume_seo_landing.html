@@ -1,0 +1,37 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  {% include "tutoapp/adsense-script.html" %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ page.description }}">
+  <meta name="robots" content="{% if page.indexable|default:True %}index,follow{% else %}noindex,nofollow{% endif %},max-image-preview:large">
+  <link rel="canonical" href="{{ canonical_url }}">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="OWCUS">
+  <meta property="og:title" content="{{ page.title }}">
+  <meta property="og:description" content="{{ page.description }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{ page.title }}">
+  <meta name="twitter:description" content="{{ page.description }}">
+  <title>{{ page.title }}</title>
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261120-nav-refine">
+  <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
+  <style>
+    :root{--ink:#172536;--muted:#526b80;--line:#dbe5e8;--green:#0b7a5a;--orange:#e67534;--surface:#f7faf9}*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#fbfdfd}.seo-header{min-height:68px;display:flex;align-items:center;gap:20px;padding:0 clamp(16px,5vw,68px);border-bottom:1px solid #e7edef;background:#fff}.seo-brand{font:800 21px Georgia,serif;white-space:nowrap;text-decoration:none;color:var(--ink)}.seo-header .site-menu{margin-left:auto}.seo-main{max-width:1220px;margin:auto;padding:clamp(42px,7vw,88px) clamp(18px,5vw,68px) 80px}.seo-hero{max-width:900px}.seo-kicker{margin:0 0 15px;color:var(--orange);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.seo-hero h1{max-width:850px;margin:0 0 22px;font-size:clamp(38px,6vw,76px);line-height:1.02;letter-spacing:-.06em}.seo-intro{max-width:790px;margin:0;color:var(--muted);font-size:clamp(18px,2.2vw,23px);line-height:1.55}.seo-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}.seo-button{display:inline-flex;align-items:center;justify-content:center;padding:13px 18px;border-radius:11px;background:var(--green);color:#fff;text-decoration:none;font-weight:800}.seo-button.alt{border:1px solid var(--line);background:#fff;color:var(--green)}.seo-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:24px;margin-top:50px}.seo-panel{padding:26px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 12px 30px rgba(23,37,54,.05)}.seo-panel h2{margin:0 0 18px;font-size:25px;letter-spacing:-.03em}.seo-section{padding:20px 0;border-top:1px solid #edf1f2}.seo-section:first-of-type{padding-top:0;border-top:0}.seo-section h3{margin:0 0 7px;font-size:18px}.seo-section p,.seo-faq dd{margin:0;color:var(--muted);line-height:1.7}.seo-links{display:grid;gap:8px}.seo-links a{display:block;padding:11px 12px;border-radius:10px;background:var(--surface);color:var(--green);font-size:13px;font-weight:750;text-decoration:none}.seo-links a:hover{background:#eaf6f1}.seo-faq{margin-top:24px}.seo-faq dt{margin-top:18px;font-weight:800}.seo-faq dt:first-child{margin-top:0}.seo-faq dd{margin-top:5px}.seo-footer-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;color:var(--green);font-size:13px;font-weight:750}.seo-footer-links a{text-decoration:none}@media(max-width:900px){.seo-grid{grid-template-columns:1fr}}@media(max-width:800px){.seo-header{position:relative;flex-wrap:wrap;padding:12px 16px}.seo-header .site-menu{width:100%;margin:0}.seo-header .site-auth-actions{margin-left:auto}.seo-main{padding-top:45px}.seo-hero h1{font-size:clamp(38px,11vw,58px)}}
+  </style>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"{{ canonical_url }}#webpage","url":"{{ canonical_url }}","name":"{{ page.title|escapejs }}","description":"{{ page.description|escapejs }}","isPartOf":{"@id":"https://www.owcus.com/#website"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Resume examples","item":"https://www.owcus.com/resume/"},{"@type":"ListItem","position":2,"name":"{{ page.h1|escapejs }}","item":"{{ canonical_url }}"}]}]}</script>
+</head>
+<body>
+  <header class="seo-header">{% include "tutoapp/site_brand.html" %}{% include "tutoapp/site_nav_clean.html" %}</header>
+  <main class="seo-main">
+    <section class="seo-hero"><p class="seo-kicker">OWCUS resume library</p><h1>{{ page.h1 }}</h1><p class="seo-intro">{{ page.intro }}</p><div class="seo-actions"><a class="seo-button" href="{% url 'resume_builder' %}">Open Resume Builder →</a><a class="seo-button alt" href="{% url 'resume_hub' %}">Browse role examples</a></div></section>
+    <div class="seo-grid"><section class="seo-panel" aria-labelledby="guide-content"><h2 id="guide-content">Practical guidance</h2>{% for heading, paragraph in page.sections %}<article class="seo-section"><h3>{{ heading }}</h3><p>{{ paragraph }}</p></article>{% endfor %}{% if page.faqs %}<section class="seo-faq" aria-labelledby="faq-title"><h2 id="faq-title">Frequently asked questions</h2><dl>{% for question, answer in page.faqs %}<dt>{{ question }}</dt><dd>{{ answer }}</dd>{% endfor %}</dl></section>{% endif %}</section><aside class="seo-panel" aria-labelledby="role-links"><h2 id="role-links">Explore related roles</h2><div class="seo-links">{% for group in role_groups %}<a href="{% url 'resume_hub' %}#{{ group.name|slugify }}">{{ group.name }}</a>{% for role in group.roles|slice:":3" %}<a href="{% url 'resume_role' role.slug %}">{{ role.title }} resume example</a>{% endfor %}{% endfor %}</div></aside></div>
+    <nav class="seo-footer-links" aria-label="Resume resources"><a href="{% url 'resume_hub' %}">All resume examples</a><a href="{% url 'resume_builder' %}">Resume Builder</a><a href="/about/">About OWCUS</a><a href="/contact/">Contact</a></nav>
+  </main>
+  <script src="{% static 'tutoapp/site-nav.js' %}?v=20261116-nav3"></script>
+  {% include "tutoapp/site_footer.html" %}
+</body>
+</html>

@@ -20,15 +20,16 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from django.utils import timezone
 from django.urls import reverse
 
-from .models import EmailVerificationChallenge, FirebaseIdentity, PracticeSubmission, SavedProgram
+from .models import EmailVerificationChallenge, FirebaseIdentity, PracticeSubmission, ResumeSeoPage, SavedProgram
 from .resume_catalog import EXPERIENCE_OPTIONS, ROLE_BY_SLUG, ROLE_CATALOG, ROLE_GROUPS, role_content
+from .resume_seo import LANDING_PAGES
 
 logger = logging.getLogger(__name__)
 
@@ -160,58 +161,192 @@ def resume_hub(request):
         {'name': name, 'roles': [role for role in ROLE_CATALOG if role['category'] == name]}
         for name in ROLE_GROUPS
     ]
-    return render(request, 'tutoapp/resume_hub.html', {'groups': groups, 'roles': ROLE_CATALOG})
+    item_list = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        'name': 'OWCUS Resume Examples by Job Role',
+        'description': 'Public resume examples and career guidance organised by role and experience.',
+        'url': 'https://www.owcus.com/resume/',
+        'numberOfItems': len(ROLE_CATALOG),
+        'itemListElement': [
+            {
+                '@type': 'ListItem',
+                'position': index,
+                'name': f"{role['title']} Resume Example",
+                'url': f"https://www.owcus.com{reverse('resume_role', kwargs={'slug': role['slug']})}",
+            }
+            for index, role in enumerate(ROLE_CATALOG, start=1)
+        ],
+    }
+    return render(request, 'tutoapp/resume_hub.html', {
+        'groups': groups,
+        'roles': ROLE_CATALOG,
+        'resume_item_list': json.dumps(item_list),
+    })
+
+
+def resume_seo_landing(request, slug):
+    page = LANDING_PAGES.get(slug)
+    if not page:
+        from django.http import Http404
+        raise Http404('Resume SEO page not found')
+    path = reverse('resume_seo_landing', kwargs={'slug': slug})
+    override = ResumeSeoPage.objects.filter(path=path).first()
+    if override:
+        if not override.published:
+            from django.http import Http404
+            raise Http404('Resume SEO page not published')
+        page = {
+            **page,
+            'page_type': override.page_type,
+            'title': override.title,
+            'description': override.meta_description,
+            'h1': override.h1,
+            'intro': override.intro,
+            'sections': [
+                (line.split('|', 1)[0].strip(), line.split('|', 1)[1].strip())
+                for line in override.body.splitlines() if '|' in line
+            ] or page['sections'],
+            'faqs': [
+                (item.get('question', ''), item.get('answer', ''))
+                for item in override.faqs
+                if item.get('question') and item.get('answer')
+            ] or page['faqs'],
+            'indexable': override.indexable,
+        }
+    return render(request, 'tutoapp/resume_seo_landing.html', {
+        'page': page,
+        'canonical_url': f'https://www.owcus.com{path}',
+        'role_groups': [
+            {'name': name, 'roles': [role for role in ROLE_CATALOG if role['category'] == name]}
+            for name in list(ROLE_GROUPS)[:4]
+        ],
+    })
 
 
 def resume_role(request, slug):
     role = ROLE_BY_SLUG.get(slug)
     if not role:
+        country_aliases = {
+            'usa': 'us-resume-format',
+            'india': 'india-resume-format',
+            'canada': 'canada-resume-format',
+            'uk': 'uk-resume-format',
+        }
+        if slug in country_aliases:
+            return redirect('resume_seo_landing', slug=country_aliases[slug], permanent=True)
         from django.http import Http404
         raise Http404('Resume role not found')
     experience = request.GET.get('experience', '')
     content = role_content(role, experience)
+    canonical_url = f"https://www.owcus.com{reverse('resume_role', kwargs={'slug': role['slug']})}"
+    page_title = f"{role['title']} Resume Example & Guide | OWCUS"
+    seo_description = (
+        f"Explore an ATS-friendly {role['title']} resume example from OWCUS, with role-specific skills, "
+        f"projects, achievements, interview preparation, and practical career guidance."
+    )
+    override = ResumeSeoPage.objects.filter(path=request.path.split('?', 1)[0]).first()
+    if override:
+        if not override.published:
+            from django.http import Http404
+            raise Http404('Resume role page not published')
+        page_title = override.title
+        seo_description = override.meta_description
+        if override.h1:
+            role = {**role, 'seo_h1': override.h1}
+        if override.intro:
+            content = {**content, 'summary': override.intro}
     related_roles = [
         candidate for candidate in ROLE_CATALOG
         if candidate['category'] == role['category'] and candidate['slug'] != role['slug']
     ][:4]
     structured_data = json.dumps({
         '@context': 'https://schema.org',
-        '@type': 'WebPage',
-        'name': f"{role['title']} Resume Example",
-        'description': f"ATS-friendly {role['title']} resume example and career guidance.",
-        'url': f'https://www.owcus.com{reverse("resume_role", kwargs={"slug": role["slug"]})}',
-        'breadcrumb': {
-            '@type': 'BreadcrumbList',
-            'itemListElement': [
-                {'@type': 'ListItem', 'position': 1, 'name': 'Resume Examples', 'item': 'https://www.owcus.com/resume/'},
-                {'@type': 'ListItem', 'position': 2, 'name': role['category']},
-                {'@type': 'ListItem', 'position': 3, 'name': role['title']},
-            ],
-        },
+        '@graph': [
+            {
+                '@type': 'WebPage',
+                '@id': f'{canonical_url}#webpage',
+                'name': page_title,
+                'description': seo_description,
+                'url': canonical_url,
+                'isPartOf': {'@id': 'https://www.owcus.com/#website'},
+                'about': {'@type': 'Thing', 'name': f"{role['title']} careers"},
+                'breadcrumb': {'@id': f'{canonical_url}#breadcrumb'},
+            },
+            {
+                '@type': 'BreadcrumbList',
+                '@id': f'{canonical_url}#breadcrumb',
+                'itemListElement': [
+                    {'@type': 'ListItem', 'position': 1, 'name': 'Resume Examples', 'item': 'https://www.owcus.com/resume/'},
+                    {'@type': 'ListItem', 'position': 2, 'name': role['category'], 'item': 'https://www.owcus.com/resume/'},
+                    {'@type': 'ListItem', 'position': 3, 'name': role['title'], 'item': canonical_url},
+                ],
+            },
+        ],
     })
     return render(request, 'tutoapp/resume_role.html', {
         'role': role, 'content': content, 'experience_options': EXPERIENCE_OPTIONS,
         'selected_experience': experience, 'related_roles': related_roles,
         'structured_data': structured_data,
+        'canonical_url': canonical_url,
+        'page_title': page_title,
+        'seo_description': seo_description,
+        'seo_indexable': not override or override.indexable,
     })
 
 
-def resume_sitemap(request):
+def _resume_seo_paths():
     urls = [
         '/', '/about/', '/contact/', '/privacy/', '/terms/', '/tutorials/', '/html/', '/css/', '/javascript/', '/python/',
         '/csharp/', '/data-science/', '/manual-testing/', '/practical-skills/',
-        '/java/', '/compiler/', '/practice/', '/resume-builder/', '/resume/', '/marketing-sandboxes/', '/dv360/', '/cm360/',
-    ] + [f"/resume/{role['slug']}/" for role in ROLE_CATALOG]
+        '/java/', '/compiler/', '/practice/', '/resume/', '/marketing-sandboxes/', '/dv360/', '/cm360/',
+    ]
+    managed_paths = {page.path: page for page in ResumeSeoPage.objects.all()}
+    def sitemap_allowed(path):
+        page = managed_paths.get(path)
+        return page is None or (page.published and page.indexable and page.include_in_sitemap)
+    role_paths = [f"/resume/{role['slug']}/" for role in ROLE_CATALOG]
+    urls += [path for path in role_paths if sitemap_allowed(path)]
+    landing_paths = [f"/resume-guides/{slug}/" for slug in LANDING_PAGES]
+    urls += [path for path in landing_paths if sitemap_allowed(path)]
+    return urls
+
+
+def _sitemap_response(paths):
     body = '<?xml version="1.0" encoding="UTF-8"?>' + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     canonical_base = 'https://www.owcus.com'
-    body += ''.join(f'<url><loc>{escape(canonical_base + path)}</loc></url>' for path in urls)
+    body += ''.join(f'<url><loc>{escape(canonical_base + path)}</loc></url>' for path in paths)
     body += '</urlset>'
     return HttpResponse(body, content_type='application/xml')
 
 
+def resume_sitemap(request):
+    return _sitemap_response(_resume_seo_paths())
+
+
+def resume_segment_sitemap(request, segment):
+    paths = _resume_seo_paths()
+    if segment == 'roles':
+        paths = [path for path in paths if path.startswith('/resume/') and path.count('/') == 3]
+    elif segment == 'experience':
+        # Experience-specific query states remain intentionally excluded until they
+        # have editorially distinct, stable page records.
+        paths = []
+    elif segment == 'countries':
+        paths = [path for path in paths if ResumeSeoPage.objects.filter(path=path, page_type='country').exists()]
+    elif segment == 'categories':
+        paths = [path for path in paths if ResumeSeoPage.objects.filter(path=path, page_type='category').exists()]
+    elif segment == 'guides':
+        paths = [path for path in paths if ResumeSeoPage.objects.filter(path=path, page_type='guide').exists()]
+    else:
+        from django.http import Http404
+        raise Http404('Sitemap segment not found')
+    return _sitemap_response(paths)
+
+
 def robots_txt(request):
     return HttpResponse(
-        'User-agent: *\nAllow: /\nDisallow: /dashboard/\nDisallow: /admin/\nSitemap: https://www.owcus.com/sitemap.xml\n',
+        'User-agent: *\nAllow: /\nDisallow: /dashboard/\nDisallow: /admin/\nDisallow: /api/\nDisallow: /resume-builder/\nSitemap: https://www.owcus.com/sitemap.xml\n',
         content_type='text/plain',
     )
 
@@ -302,10 +437,13 @@ def auth_otp_verify_link(request):
     with transaction.atomic():
         challenge = EmailVerificationChallenge.objects.select_for_update().filter(pk=payload.get('challenge_id')).first()
         now = timezone.now()
-        if not challenge or challenge.used_at or challenge.verified_at or challenge.expires_at <= now or not check_password(str(payload.get('token') or ''), challenge.link_token_hash):
+        if not challenge or challenge.used_at or challenge.expires_at <= now or not check_password(str(payload.get('token') or ''), challenge.link_token_hash):
             return JsonResponse({'ok': False, 'error': 'That verification link is invalid or expired.'}, status=400)
-        challenge.verified_at = now
-        challenge.save(update_fields=['verified_at'])
+        # Mail clients and security scanners can retry a valid link. Keep
+        # verification idempotent until password completion consumes it.
+        if not challenge.verified_at:
+            challenge.verified_at = now
+            challenge.save(update_fields=['verified_at'])
     return JsonResponse({'ok': True, 'challenge_id': challenge.pk, 'purpose': challenge.purpose, 'email': challenge.email, 'name': challenge.full_name})
 
 

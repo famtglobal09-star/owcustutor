@@ -2,13 +2,30 @@ import json
 from urllib.parse import parse_qs, urlsplit
 
 from django.core import mail
+from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from django.contrib.auth.models import User
 
-from .models import EmailVerificationChallenge, SavedProgram
+from .models import EmailVerificationChallenge, ResumeSeoPage, SavedProgram
+from .resume_catalog import ROLE_CATALOG, role_content
 
 
 class CompilerPlatformTests(TestCase):
+    def test_every_resume_role_has_ten_unique_role_specific_responsibilities(self):
+        self.assertGreaterEqual(len(ROLE_CATALOG), 100)
+        for role in ROLE_CATALOG:
+            content = role_content(role)
+            responsibilities = content['responsibilities']
+            self.assertEqual(len(responsibilities), 10, role['title'])
+            self.assertEqual(len(set(responsibilities)), 10, role['title'])
+            self.assertTrue(any('[Sample achievement]' in item for item in responsibilities), role['title'])
+            self.assertTrue(any(role['title'].lower() in item.lower() for item in responsibilities), role['title'])
+
+    def test_fresher_role_uses_internship_and_project_responsibilities_by_default(self):
+        role = next(item for item in ROLE_CATALOG if item['title'] == 'Manual Testing Fresher')
+        responsibilities = role_content(role)['responsibilities']
+        self.assertIn('internship', responsibilities[0].lower())
+        self.assertIn('project', responsibilities[2].lower())
     def test_dashboard_requires_an_authenticated_session(self):
         response = self.client.get('/dashboard/')
         self.assertEqual(response.status_code, 302)
@@ -38,9 +55,41 @@ class CompilerPlatformTests(TestCase):
         sitemap = self.client.get('/sitemap.xml')
         self.assertEqual(sitemap.status_code, 200)
         self.assertContains(sitemap, '/resume/ai-engineer/')
+        self.assertContains(sitemap, '/resume-guides/ats-resumes/')
+        self.assertNotContains(sitemap, '<loc>https://www.owcus.com/resume-builder/</loc>')
         robots = self.client.get('/robots.txt')
         self.assertEqual(robots.status_code, 200)
         self.assertContains(robots, 'Sitemap:')
+        self.assertContains(robots, 'Disallow: /dashboard/')
+        self.assertEqual(self.client.get('/sitemaps/resume-roles.xml').status_code, 200)
+        self.assertContains(self.client.get('/sitemaps/resume-guides.xml'), '/resume-guides/ats-resumes/')
+
+    def test_resume_seo_landing_pages_are_server_rendered_and_indexable(self):
+        response = self.client.get('/resume-guides/india-resume-format/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'India resume format')
+        self.assertContains(response, 'rel="canonical"')
+        self.assertContains(response, 'index,follow')
+        self.assertContains(response, 'BreadcrumbList')
+
+    def test_country_alias_redirects_to_canonical_resume_guide(self):
+        response = self.client.get('/resume/india/')
+        self.assertEqual(response.status_code, 301)
+        self.assertEqual(response['Location'], '/resume-guides/india-resume-format/')
+
+    def test_indexable_seo_pages_reject_weak_or_duplicate_metadata(self):
+        page = ResumeSeoPage(
+            path='/resume-guides/test-quality/',
+            title='Short title',
+            meta_description='Too short',
+            h1='Test page',
+            intro='Brief introduction',
+            published=True,
+            indexable=True,
+            content_quality_score=40,
+        )
+        with self.assertRaises(ValidationError):
+            page.full_clean()
 
     def test_resume_builder_ai_compatibility_endpoints(self):
         suggestions = self.client.post('/api/ai/suggest-responsibilities', data=json.dumps({'role': 'Tester', 'company': 'OWCUS', 'skills': ['Python']}), content_type='application/json')
@@ -110,6 +159,8 @@ class CompilerPlatformTests(TestCase):
         response = self.client.post('/api/auth/otp/verify-link/', data=json.dumps({'challenge_id': query['verify'][0], 'token': query['token'][0]}), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['email'], 'link@example.com')
+        repeated = self.client.post('/api/auth/otp/verify-link/', data=json.dumps({'challenge_id': query['verify'][0], 'token': query['token'][0]}), content_type='application/json')
+        self.assertEqual(repeated.status_code, 200)
 
     @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend', ALLOWED_HOSTS=['testserver'])
     def test_password_reset_email_link_updates_existing_password(self):

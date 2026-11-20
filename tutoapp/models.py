@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 
 class SavedProgram(models.Model):
@@ -65,3 +66,72 @@ class FirebaseIdentity(models.Model):
 
     def __str__(self):
         return f'{self.display_name or self.email} ({self.firebase_uid})'
+
+
+class ResumeSeoPage(models.Model):
+    PAGE_TYPES = (
+        ('guide', 'Resume guide'),
+        ('category', 'Role category'),
+        ('country', 'Country format'),
+        ('role', 'Role page override'),
+    )
+
+    path = models.CharField(max_length=255, unique=True)
+    page_type = models.CharField(max_length=20, choices=PAGE_TYPES, default='guide')
+    title = models.CharField(max_length=160)
+    meta_description = models.CharField(max_length=320)
+    h1 = models.CharField(max_length=180)
+    intro = models.TextField()
+    body = models.TextField(blank=True)
+    faqs = models.JSONField(default=list, blank=True)
+    published = models.BooleanField(default=True)
+    indexable = models.BooleanField(default=True)
+    include_in_sitemap = models.BooleanField(default=True)
+    content_quality_score = models.PositiveSmallIntegerField(default=0)
+    editorial_notes = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['path']
+        verbose_name = 'Resume SEO page'
+        verbose_name_plural = 'Resume SEO pages'
+
+    def __str__(self):
+        return self.title
+
+    def clean(self):
+        """Keep published landing pages useful, unique, and crawl-safe."""
+        errors = {}
+
+        if not self.path.startswith('/') or not self.path.endswith('/'):
+            errors['path'] = 'Use a canonical path that starts and ends with /. '
+
+        if self.published and self.indexable:
+            if self.content_quality_score < 70:
+                errors['content_quality_score'] = (
+                    'Published indexable pages need a content quality score of at least 70.'
+                )
+            if len((self.title or '').strip()) < 30:
+                errors['title'] = 'Published indexable pages need a descriptive title.'
+            if len((self.meta_description or '').strip()) < 80:
+                errors['meta_description'] = (
+                    'Published indexable pages need a useful meta description of at least 80 characters.'
+                )
+            if self.page_type != 'role' and len((self.intro or '').strip()) < 120:
+                errors['intro'] = 'Published guide and category pages need a substantive introduction.'
+
+            other_pages = ResumeSeoPage.objects.filter(
+                published=True,
+                indexable=True,
+            ).exclude(pk=self.pk)
+            if self.title and other_pages.filter(title__iexact=self.title.strip()).exists():
+                errors['title'] = 'This title is already used by another indexable SEO page.'
+            if self.meta_description and other_pages.filter(
+                meta_description__iexact=self.meta_description.strip()
+            ).exists():
+                errors['meta_description'] = (
+                    'This meta description is already used by another indexable SEO page.'
+                )
+
+        if errors:
+            raise ValidationError(errors)

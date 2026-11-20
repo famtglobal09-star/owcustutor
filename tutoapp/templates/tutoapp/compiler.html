@@ -9,14 +9,14 @@
   <meta name="description" content="Use the OWCUS browser-based code playground to write, run, and learn with practical programming examples.">
   <title>OWCUS Code Playground</title>
   {% include "tutoapp/seo_head.html" with seo_title="OWCUS Code Playground" seo_description="Use the OWCUS browser-based code playground to write, run, and learn with practical programming examples." %}
-  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261120-nav-refine">
   <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
   <link rel="stylesheet" href="{% static 'tutoapp/compiler.css' %}?v=20261117-split-layout">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 </head>
 <body class="compiler-page">
   <header class="landing-header compiler-header">
-    <a class="brand" href="/"><span class="brand-mark">o</span><span>owcus</span></a>
+    <a class="brand" href="/" aria-label="OWCUS home"><img class="brand-logo" src="{% static 'tutoapp/images/owcus-logo.webp' %}" alt="OWCUS"></a>
     {% include "tutoapp/site_nav_clean.html" %}
   </header>
   <main class="compiler-shell">

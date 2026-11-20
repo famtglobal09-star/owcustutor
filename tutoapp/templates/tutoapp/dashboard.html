@@ -7,12 +7,12 @@
   <meta name="google-adsense-account" content="ca-pub-6776941375498143">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <title>My Dashboard | OWCUS</title>
-  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261116-responsive">
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261120-nav-refine">
   <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
   <style>body{margin:0;background:#f6faf9;color:#172536;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}.dashboard-shell{max-width:1100px;margin:0 auto;padding:60px 24px}.dashboard-card{border:1px solid #dbe7e5;border-radius:22px;background:#fff;padding:36px;box-shadow:0 16px 40px rgba(17,37,56,.08)}.dashboard-card h1{margin:0 0 8px;font-size:clamp(30px,5vw,52px);letter-spacing:-.05em}.dashboard-card p{color:#61788c;max-width:650px}.dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px}.dashboard-tile{border:1px solid #e1e9e7;border-radius:14px;padding:18px}.dashboard-tile strong{display:block;margin-bottom:5px}.dashboard-tile span{color:#78909e;font-size:13px}@media(max-width:700px){.dashboard-shell{padding:30px 16px}.dashboard-card{padding:24px}.dashboard-grid{grid-template-columns:1fr}}</style>
 </head>
 <body data-auth-protected="true">
-  <header class="landing-header"><a class="brand" href="/"><span class="brand-mark">o</span><span>owcus</span></a>{% include "tutoapp/site_nav_clean.html" %}</header>
+  <header class="landing-header"><a class="brand" href="/" aria-label="OWCUS home"><img class="brand-logo" src="{% static 'tutoapp/images/owcus-logo.webp' %}" alt="OWCUS"></a>{% include "tutoapp/site_nav_clean.html" %}</header>
   <main class="dashboard-shell"><section class="dashboard-card"><p class="eyebrow">OWCUS MEMBER AREA</p><h1>My Dashboard</h1><p>Your learning progress, saved resumes, practice results, and account settings will live here. Sign in to access your private workspace.</p><div class="dashboard-grid"><div class="dashboard-tile"><strong>Learning progress</strong><span>Track courses and milestones.</span></div><div class="dashboard-tile"><strong>My resumes</strong><span>Manage your saved career documents.</span></div><div class="dashboard-tile"><strong>Practice results</strong><span>Review your coding practice history.</span></div></div></section></main>
   {% include "tutoapp/site_footer.html" %}
 </body>

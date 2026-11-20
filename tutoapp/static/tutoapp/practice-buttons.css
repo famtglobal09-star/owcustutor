@@ -1,0 +1,45 @@
+.practice-actions button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(23, 37, 54, .05);
+  transition: transform .18s, box-shadow .18s, border-color .18s, background .18s;
+}
+
+.practice-actions button:hover {
+  border-color: var(--teal);
+  box-shadow: 0 7px 15px rgba(23, 37, 54, .1);
+  transform: translateY(-1px);
+}
+
+.practice-actions button:focus-visible {
+  outline: 3px solid rgba(230, 117, 52, .28);
+  outline-offset: 2px;
+}
+
+.practice-actions .primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(11, 122, 90, .2);
+}
+
+.practice-actions .primary:hover {
+  background: #096b50;
+  border-color: #096b50;
+}
+
+.challenge-item {
+  transition: transform .18s, box-shadow .18s, border-color .18s;
+}
+
+.challenge-item:hover {
+  border-color: #9eb6bf;
+  box-shadow: 0 5px 12px rgba(23, 37, 54, .08);
+  transform: translateY(-1px);
+}

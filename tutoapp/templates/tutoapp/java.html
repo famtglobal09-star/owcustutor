@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
 <meta name="google-adsense-account" content="ca-pub-6776941375498143">
 <meta name="description" content="OWCUS Java Tutorial: clear Java lessons, complete programs, diagrams, practice and interview questions.">
 <meta name="robots" content="index,follow">
-<link rel="stylesheet" href="/static/tutoapp/site-nav.css?v=20261116-responsive">
+<link rel="stylesheet" href="/static/tutoapp/site-nav.css?v=20261120-nav-refine">
 <link rel="stylesheet" href="/static/tutoapp/legal.css">
 <title>Java Tutorial | OWCUS Learning Hub</title>
 <meta name="description" content="Learn Java fundamentals, object-oriented programming, examples, and practical exercises in the OWCUS learning hub.">
@@ -61,7 +62,7 @@ body{font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow
 </style>
 </head>
 <body>
-<header class="top"><a class="brand" href="/" aria-label="OWCUS home"><span class="brand-mark">o</span><span>owcus</span></a>{% include "tutoapp/site_nav_clean.html" %}<nav class="langs"><a class="active" href="/java/">Java</a><a href="/tutorials/#py-overview">Python</a><a href="/tutorials/#overview">HTML</a></nav></header>
+<header class="top"><a class="brand" href="/" aria-label="OWCUS home"><img class="brand-logo" src="{% static 'tutoapp/images/owcus-logo.webp' %}" alt="OWCUS"></a>{% include "tutoapp/site_nav_clean.html" %}<nav class="langs"><a class="active" href="/java/">Java</a><a href="/tutorials/#py-overview">Python</a><a href="/tutorials/#overview">HTML</a></nav></header>
 <div class="layout" id="layout">
 <aside class="sidebar" aria-label="Java course navigation"><div class="side-tools"><input class="search" id="search" type="search" placeholder="Search Java lessons..." aria-label="Search Java lessons"><div class="tool-row"><button id="expand">Expand all</button><button id="collapse">Collapse all</button></div></div><nav id="nav"></nav></aside>
 <main class="center" id="center" tabindex="-1"></main>

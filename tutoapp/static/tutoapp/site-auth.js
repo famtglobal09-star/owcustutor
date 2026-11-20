@@ -1,5 +1,5 @@
 import { initializeApp, getApp, getApps } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, browserLocalPersistence, browserSessionPersistence, setPersistence, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, browserLocalPersistence, browserSessionPersistence, setPersistence, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
 const firebaseConfig = { projectId: 'owcus-24e46', appId: '1:585892351412:web:bbc439d0320c8bac7676e1', apiKey: 'AIzaSyCaYcZd17Cx6tsCjJoEATiZVhIqgORwU3g', authDomain: 'owcus-24e46.firebaseapp.com', storageBucket: 'owcus-24e46.firebasestorage.app', messagingSenderId: '585892351412', measurementId: 'G-Q0GW28QTFN' };
 const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
@@ -18,6 +18,7 @@ let otpPurpose = null;
 let otpEmail = '';
 let otpName = '';
 let googleLoginPending = false;
+let emailAuthPending = false;
 const escapeHtml = value => String(value ?? '').replace(/[&<>'\"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
 
 const modalMarkup = `<div class="auth-backdrop" data-site-auth-modal hidden><section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="site-auth-title"><button class="auth-close" type="button" data-auth-close aria-label="Close sign in dialog">×</button><div class="auth-kicker">OWCUS ACCOUNT</div><h2 id="site-auth-title">Welcome back</h2><p class="auth-subtitle">Save your learning progress, practice results and resume work in one place.</p><div class="auth-tabs" role="tablist"><button type="button" data-auth-tab="signin" class="active">Sign in</button><button type="button" data-auth-tab="signup">Sign up</button></div><div data-auth-form><button class="google-auth-button" type="button" data-google-auth><span class="google-g">G</span> Continue with Google</button><div class="auth-divider"><span>or use your email</span></div><label class="auth-label" data-auth-name-field>Your name</label><input class="auth-input" type="text" placeholder="Your name" autocomplete="name" data-auth-name-input><label class="auth-label">Email address</label><input class="auth-input" type="email" placeholder="you@example.com" autocomplete="email" data-auth-email-input><label class="auth-label" data-auth-password-label>Password</label><input class="auth-input" type="password" placeholder="At least 6 characters" autocomplete="current-password" data-auth-password-input><label class="auth-label" data-auth-confirm-label>Confirm password</label><input class="auth-input" type="password" placeholder="Repeat your password" autocomplete="new-password" data-auth-confirm-input><button class="auth-submit-button" type="button" data-email-auth>Sign in with email</button><p class="auth-message" data-auth-message role="status"></p></div></section></div>`;
@@ -46,6 +47,42 @@ function showToast(text, error = false) {
   if (!toast) { toast = document.createElement('div'); toast.className = 'site-auth-toast'; toast.dataset.siteAuthToast = ''; toast.setAttribute('role', 'status'); document.body.append(toast); }
   toast.textContent = text; toast.classList.toggle('error', error); toast.classList.add('show');
   window.setTimeout(() => toast.classList.remove('show'), 3600);
+}
+
+function renderEmailVerificationSent(email) {
+  const modal = ensureModal();
+  const form = modal.querySelector('[data-auth-form]');
+  form.innerHTML = `<div class="auth-email-sent" role="status"><div class="auth-email-sent-icon" aria-hidden="true">✓</div><h3>Verify your email address</h3><p>Firebase accepted the verification request for</p><strong>${escapeHtml(email)}</strong><p class="auth-email-sent-help">Open the message from Firebase and click its verification link. Check spam or promotions, and add noreply@owcus-24e46.firebaseapp.com to your contacts if needed.</p><button class="auth-submit-button" type="button" data-check-email>I've verified my email</button><button class="auth-forgot" type="button" data-resend-email>Resend verification email</button><button class="auth-forgot" type="button" data-return-signin>Back to sign in</button><p class="auth-message" data-auth-message role="status"></p></div>`;
+  const message = form.querySelector('[data-auth-message]');
+  form.querySelector('[data-resend-email]').onclick = async event => {
+    const button = event.currentTarget;
+    if (!pendingEmailVerificationUser) { message.textContent = 'Your registration session expired. Return to sign in and try again.'; return; }
+    button.disabled = true;
+    try {
+      await sendEmailVerification(pendingEmailVerificationUser, { url: `${location.origin}/?email-verified=1`, handleCodeInApp: false });
+      message.textContent = 'A new verification email was requested. Check your inbox and spam folder.';
+    } catch (error) {
+      message.textContent = errorText(error);
+    } finally {
+      window.setTimeout(() => { button.disabled = false; }, 60000);
+    }
+  };
+  form.querySelector('[data-check-email]').onclick = async () => {
+    if (!pendingEmailVerificationUser) { message.textContent = 'Your registration session expired. Return to sign in and try again.'; return; }
+    try {
+      await pendingEmailVerificationUser.reload();
+      if (!pendingEmailVerificationUser.emailVerified) { message.textContent = 'Your email is not verified yet. Open the Firebase email, then try again.'; return; }
+      const user = await syncFirebaseUser(pendingEmailVerificationUser);
+      pendingEmailVerificationUser = null;
+      renderAuth(user);
+      closeAuth();
+      showToast(`Welcome, ${user.displayName || user.email}.`);
+      goAfterAuth();
+    } catch (error) {
+      message.textContent = errorText(error);
+    }
+  };
+  form.querySelector('[data-return-signin]').onclick = () => { modal.remove(); openAuth('signin'); };
 }
 
 function sessionGet(key) { try { return sessionStorage.getItem(key); } catch (_) { return null; } }
@@ -136,9 +173,19 @@ function normalizeDjangoUser(user) {
   };
 }
 
+function restoreCredentialForm(modal) {
+  const form = modal.querySelector('[data-auth-form]');
+  if (form.querySelector('[data-auth-email-input]')) return;
+  form.innerHTML = `<button class="google-auth-button" type="button" data-google-auth><span class="google-g">G</span> Continue with Google</button><div class="auth-divider"><span>or use your email</span></div><label class="auth-label" data-auth-name-field>Your name</label><input class="auth-input" type="text" placeholder="Your name" autocomplete="name" data-auth-name-input><label class="auth-label">Email address</label><input class="auth-input" type="email" placeholder="you@example.com" autocomplete="email" data-auth-email-input><label class="auth-label" data-auth-password-label>Password</label><input class="auth-input" type="password" placeholder="At least 6 characters" autocomplete="current-password" data-auth-password-input><button class="auth-forgot" type="button" data-password-reset>Forgot password?</button><label class="auth-label" data-auth-confirm-label>Confirm password</label><input class="auth-input" type="password" placeholder="Repeat your password" autocomplete="new-password" data-auth-confirm-input><button class="auth-submit-button" type="button" data-email-auth>Sign in with email</button><p class="auth-message" data-auth-message role="status"></p>`;
+  form.querySelector('[data-google-auth]').onclick = handleGoogle;
+  form.querySelector('[data-email-auth]').onclick = handleEmail;
+  form.querySelector('[data-password-reset]').onclick = handlePasswordReset;
+}
+
 function setMode(next) {
   authMode = next;
   const modal = ensureModal();
+  restoreCredentialForm(modal);
   modal.querySelector('#site-auth-title').textContent = next === 'signup' ? 'Create your free account' : 'Welcome back';
   modal.querySelectorAll('[data-auth-tab]').forEach(tab => tab.classList.toggle('active', tab.dataset.authTab === next));
   modal.querySelector('[data-auth-name-field]').hidden = next !== 'signup';
@@ -270,14 +317,29 @@ async function handleGoogle() {
 }
 
 async function handleEmail() {
+  if (emailAuthPending) return;
   const modal = ensureModal();
   const message = modal.querySelector('[data-auth-message]');
+  const submitButton = modal.querySelector('[data-email-auth]');
   const email = modal.querySelector('[data-auth-email-input]').value.trim();
   const name = modal.querySelector('[data-auth-name-input]').value.trim();
   const password = modal.querySelector('[data-auth-password-input]').value;
   const confirm = modal.querySelector('[data-auth-confirm-input]').value;
-  if (authMode === 'signup') { if (!name || !email) { message.textContent = 'Enter your name and email address.'; return; } await startOtpFlow('registration', email, name); return; }
-  if (!email || !password) { message.textContent = 'Enter your email and password.'; return; }
+  if (authMode === 'signup') {
+    if (!name || !email) { message.textContent = 'Enter your name and email address.'; return; }
+    emailAuthPending = true;
+    submitButton.disabled = true;
+    submitButton.setAttribute('aria-busy', 'true');
+    submitButton.textContent = 'Sending verification email…';
+    message.textContent = 'Sending verification email…';
+    try { await startOtpFlow('registration', email, name); }
+    finally { emailAuthPending = false; submitButton.disabled = false; submitButton.removeAttribute('aria-busy'); submitButton.textContent = 'Send verification email'; }
+    return;
+  }
+  if (!email || !password) { message.textContent = 'Enter your email address and password.'; return; }
+  emailAuthPending = true;
+  submitButton.disabled = true;
+  submitButton.setAttribute('aria-busy', 'true');
   try {
     const session = await postAuthApi('/api/auth/login/', { email, password });
     await signOut(auth);
@@ -285,7 +347,8 @@ async function handleEmail() {
     closeAuth();
     showToast(`Welcome back, ${session.user.name || session.user.email}.`);
     goAfterAuth();
-  } catch (error) { message.textContent = error.message || 'Unable to sign in.'; }
+  } catch (error) { message.textContent = errorText(error); }
+  finally { emailAuthPending = false; submitButton.disabled = false; submitButton.removeAttribute('aria-busy'); }
 }
 
 async function handleSignOut() {
@@ -313,8 +376,11 @@ function init() {
   if (pendingSignedOut || new URLSearchParams(location.search).has('signedout')) { sessionRemove('owcusSignedOutMessage'); showToast(pendingSignedOut || 'You have successfully signed out.'); }
   // Keep the navigation in its loading state until persistence has completed,
   // so a restored account is never briefly replaced by Login/Sign Up.
+  // Email verification links should open the password step immediately;
+  // Firebase persistence can restore independently in the background.
+  consumeVerificationLink();
   authReady
-    .then(() => { onAuthStateChanged(auth, async user => { if (user) { try { renderAuth(await syncFirebaseUser(user)); } catch (error) { renderAuth(null); if (document.body.dataset.authProtected === 'true') showToast(errorText(error), true); } return; } try { const response = await fetch('/api/auth/session/', { credentials: 'same-origin' }); const session = await response.json(); renderAuth(session.authenticated ? normalizeDjangoUser(session.user) : null); } catch (_) { renderAuth(null); } }); consumeVerificationLink(); })
+    .then(() => { onAuthStateChanged(auth, async user => { if (user) { if (user.email && !user.emailVerified && user.providerData.some(provider => provider.providerId === 'password')) { renderAuth(null); return; } try { renderAuth(await syncFirebaseUser(user)); } catch (error) { renderAuth(null); if (document.body.dataset.authProtected === 'true') showToast(errorText(error), true); } return; } try { const response = await fetch('/api/auth/session/', { credentials: 'same-origin' }); const session = await response.json(); renderAuth(session.authenticated ? normalizeDjangoUser(session.user) : null); } catch (_) { renderAuth(null); } }); })
     .catch(() => {
       document.querySelectorAll('[data-site-auth]').forEach(container => {
         container.removeAttribute('data-auth-loading');

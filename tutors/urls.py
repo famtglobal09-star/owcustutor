@@ -19,7 +19,7 @@ from django.urls import path
 from tutoapp.views import (
     about_page, ads_txt, compiler_execute, compiler_languages, compiler_page, contact_page, course_page, dashboard, home,
     java, java_compile, practice_catalog, practice_page, practice_submit, privacy_page, terms_page,
-    google_site_verification, marketing_sandbox_showcase, resume_ai_ats_audit, resume_ai_suggest_responsibilities, resume_builder_page, resume_hub, resume_role, resume_sitemap, robots_txt, saved_programs, tutorials, dv360_page, cm360_page,
+    google_site_verification, marketing_sandbox_showcase, resume_ai_ats_audit, resume_ai_suggest_responsibilities, resume_builder_page, resume_hub, resume_role, resume_seo_landing, resume_segment_sitemap, resume_sitemap, robots_txt, saved_programs, tutorials, dv360_page, cm360_page,
     auth_otp_start, auth_otp_verify, auth_otp_verify_link, auth_otp_complete, auth_session, auth_email_login, auth_firebase_login, auth_logout,
 )
 
@@ -47,8 +47,10 @@ urlpatterns = [
     path('practice/', practice_page, name='practice'),
     path('resume-builder/', resume_builder_page, name='resume_builder'),
     path('resume/', resume_hub, name='resume_hub'),
+    path('resume-guides/<slug:slug>/', resume_seo_landing, name='resume_seo_landing'),
     path('resume/<slug:slug>/', resume_role, name='resume_role'),
     path('sitemap.xml', resume_sitemap, name='resume_sitemap'),
+    path('sitemaps/resume-<slug:segment>.xml', resume_segment_sitemap, name='resume_segment_sitemap'),
     path('robots.txt', robots_txt, name='robots_txt'),
     path('ads.txt', ads_txt, name='ads_txt'),
     path('google25bab95f8df852e0.html', google_site_verification, name='google_site_verification'),

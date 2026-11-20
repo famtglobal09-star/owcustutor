@@ -101,23 +101,69 @@ def role_skills(title, category):
 
 def role_content(role, experience=''):
     title = role['title']
+    role_name = title.lower()
     level = dict(EXPERIENCE_OPTIONS).get(experience, '')
-    if level == 'Fresher':
+    # Catalog titles that explicitly target entry-level candidates should use
+    # the practical fresher path even when no experience query is supplied.
+    is_fresher = level == 'Fresher' or 'fresher' in role_name or 'intern' in role_name
+    if is_fresher:
         qualifier = ' as a fresher'
     elif level:
         qualifier = f' with {level.lower()} of experience'
     else:
         qualifier = ''
     skills = role_skills(title, role['category'])
+    primary, secondary, tertiary = skills[:3]
+    if is_fresher:
+        responsibilities = [
+            f'Completed an internship, academic project, or structured training assignment focused on {role_name} fundamentals.',
+            f'Developed practical work using {primary}, {secondary}, and {tertiary} while following documented requirements and review steps.',
+            f'Implemented a small {role_name} project from planning through testing, demonstration, and feedback revisions.',
+            f'Created clear documentation covering setup, decisions, test evidence, and next steps for the {role_name} project.',
+            f'Collaborated with mentors, classmates, or cross-functional partners to clarify requirements and resolve issues.',
+            f'Practised {primary} and {secondary} through repeatable exercises, code reviews, test scenarios, or campaign simulations.',
+            'Presented project outcomes, explained trade-offs, and responded to technical or process questions with evidence.',
+            f'Optimized a training or project workflow by removing avoidable rework and applying structured quality checks.',
+            '[Sample achievement] Improved project completion time by 20% through better task planning and reusable documentation.',
+            f'Maintained a practical portfolio that demonstrates {role_name} skills, tools, communication, and continuous learning.',
+        ]
+    else:
+        responsibilities = [
+            f'Developed and delivered {role_name} solutions using {primary}, {secondary}, and {tertiary} against agreed requirements.',
+            f'Implemented repeatable {role_name} workflows, standards, and review checkpoints to improve delivery quality.',
+            f'Designed practical approaches for {role_name} work, balancing technical constraints, stakeholder needs, and measurable outcomes.',
+            f'Managed priorities, dependencies, risks, and handoffs across {role_name} initiatives and cross-functional teams.',
+            f'Optimized {role_name} processes by analyzing results, removing bottlenecks, and documenting reusable best practices.',
+            f'Investigated issues involving {primary} and {secondary}, communicated root causes, and coordinated verified resolutions.',
+            f'Produced role-specific documentation, dashboards, reports, or technical artifacts that helped teams make informed decisions.',
+            f'Mentored colleagues or supported peer reviews covering {primary}, {secondary}, quality standards, and delivery expectations.',
+            '[Sample achievement] Reduced avoidable rework by 30% by introducing measurable checks, clearer ownership, and follow-up reporting.',
+            f'Partnered with stakeholders to define success metrics and translate {role_name} results into actionable improvements.',
+        ]
     return {
         'summary': f'Results-driven {title}{qualifier} who has a practical record of delivering measurable outcomes, collaborating with cross-functional teams, and improving reliable day-to-day operations. This ATS-friendly example shows how to present relevant skills, achievements, projects, and responsibilities clearly.',
         'skills': skills,
-        'responsibilities': [
-            f'Planned and delivered {title.lower()} work aligned with business goals and measurable success criteria.',
-            f'Used {skills[0]}, {skills[1]}, and {skills[2]} to improve quality, efficiency, or customer outcomes.',
-            'Worked with stakeholders to clarify requirements, document decisions, and communicate progress.',
-            'Tracked results with meaningful metrics and turned lessons learned into repeatable best practices.',
+        'examples': [
+            {
+                'name': 'Achievement-led example',
+                'best_for': 'Candidates who can show measurable delivery, quality, efficiency, or business outcomes.',
+                'summary': f'{title}{qualifier} who connects {skills[0]}, {skills[1]}, and role-specific decisions to measurable improvements for customers and teams.',
+                'bullets': [
+                    f'Improved a {title.lower()} workflow by applying {skills[0]} and documenting the resulting quality or delivery gain.',
+                    'Prioritised the highest-impact work, communicated trade-offs, and reported outcomes with clear evidence.',
+                ],
+            },
+            {
+                'name': 'Project-led example',
+                'best_for': 'Freshers and career changers who need to foreground practical projects, coursework, or portfolio work.',
+                'summary': f'Practical {title} profile demonstrating {skills[2]} through a focused project, a repeatable process, and clear documentation of decisions.',
+                'bullets': [
+                    f'Built or supported a realistic project using {skills[0]}, {skills[1]}, and {skills[2]} to solve a defined problem.',
+                    'Explained the approach, testing or review steps, and what would be improved in the next iteration.',
+                ],
+            },
         ],
+        'responsibilities': responsibilities,
         'projects': [
             {'name': f'{title} Impact Project', 'description': f'Built a role-focused project that applied {skills[0]} and {skills[1]} to solve a realistic business problem, with documented results and a clear delivery process.'},
             {'name': 'Process Improvement Initiative', 'description': 'Identified a recurring bottleneck, introduced a measurable improvement, and documented the before-and-after outcome for future teams.'},
