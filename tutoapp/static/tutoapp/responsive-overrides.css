@@ -123,3 +123,10 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
   .menu-toggle{display:none!important}
   .site-auth-actions{order:3;margin-left:auto}
 }
+
+/* Keep the shared navigation visible at the top while moving through pages. */
+.landing-header,.legal-header,.site-header,.practice-header,.compiler-header{
+  position:sticky!important;
+  top:0;
+  z-index:80;
+}
