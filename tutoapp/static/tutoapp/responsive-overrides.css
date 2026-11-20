@@ -109,3 +109,7 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 @media (min-width:1440px){
   .container{width:min(calc(100% - 64px),1440px)}
 }
+
+/* Keep the navigation anchored beside the brand on every screen size. */
+.site-menu{margin-left:0}
+.menu-toggle{margin-left:0!important}
