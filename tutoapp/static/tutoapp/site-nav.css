@@ -86,6 +86,9 @@ button,input,select,textarea{max-width:100%;font:inherit}
 .site-brand-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#172536;color:#fff;font:700 22px/1 Georgia,serif;letter-spacing:0;padding-right:2px;box-shadow:0 5px 12px rgba(23,37,54,.18)}
 .brand-logo{display:block;width:138px;height:auto;max-height:42px;object-fit:contain}
 .site-brand .brand-logo{width:138px;max-height:42px}
+.site-auth-actions{margin-left:auto;flex:0 0 auto;white-space:nowrap}
+.auth-modal{min-height:440px}
+@media(max-width:800px){.site-auth-actions{margin-left:auto;flex:0 0 auto}.auth-modal{min-height:0}}
 .site-brand-name{color:#172536;font-weight:800;letter-spacing:-.065em}
 @media(max-width:800px){.site-brand{font-size:21px}.site-brand-mark{width:29px;height:29px;font-size:20px}}
 
