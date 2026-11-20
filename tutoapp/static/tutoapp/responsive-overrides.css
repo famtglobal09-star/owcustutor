@@ -132,5 +132,6 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 }
 
 /* Keep the navigation controls in the top-right corner. */
-.site-menu{margin-left:auto;justify-content:flex-end}
+.site-menu{margin-left:auto!important;justify-content:flex-end!important}
 .menu-toggle{margin-left:auto!important}
+.site-auth-actions{margin-left:8px!important}

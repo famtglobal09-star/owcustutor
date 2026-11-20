@@ -1,4 +1,4 @@
-@import url('/static/tutoapp/responsive-overrides.css');
+@import url('/static/tutoapp/responsive-overrides.css?v=20261120-nav-right');
 .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{display:flex;align-items:center;min-height:68px;gap:clamp(12px,2.5vw,34px);background:#fff;border-bottom:1px solid #edf0f1;padding:10px clamp(16px,3.5vw,68px);position:relative;z-index:30}
 .landing-header>.brand,.practice-header>.brand,.compiler-header>.brand,.legal-header>.site-brand{display:inline-flex;align-items:center;flex:0 0 auto;color:#172536;text-decoration:none}
 .brand{display:inline-flex;align-items:center;gap:9px;color:#172536;text-decoration:none;font:700 22px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.06em;white-space:nowrap}
