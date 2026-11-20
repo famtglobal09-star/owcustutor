@@ -113,3 +113,13 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 /* Keep the navigation anchored beside the brand on every screen size. */
 .site-menu{margin-left:0}
 .menu-toggle{margin-left:0!important}
+
+/* Laptops and desktops keep the full navigation row; phones and tablets use
+   the compact menu defined above. */
+@media (min-width:1024px){
+  .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{flex-wrap:wrap}
+  .site-menu{display:flex!important;position:static;width:auto;flex:1 1 520px;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:2px;order:2}
+  .site-menu .menu-link{display:inline-flex!important;padding:9px 8px;font-size:13px}
+  .menu-toggle{display:none!important}
+  .site-auth-actions{order:3;margin-left:auto}
+}
