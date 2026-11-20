@@ -130,3 +130,7 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
   top:0;
   z-index:80;
 }
+
+/* Keep the navigation controls in the top-right corner. */
+.site-menu{margin-left:auto;justify-content:flex-end}
+.menu-toggle{margin-left:auto!important}
