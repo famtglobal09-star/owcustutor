@@ -2,10 +2,11 @@
   const toggle = document.querySelector('.menu-toggle');
   const menu = document.getElementById('site-menu');
   if (!toggle || !menu) return;
+  const closeButton = menu.querySelector('[data-nav-close]');
+  const backdrop = document.querySelector('[data-nav-backdrop]');
   const more = menu.querySelector('.site-nav-more');
   const moreButton = menu.querySelector('.site-nav-more-button');
   const moreMenu = menu.querySelector('.site-nav-more-menu');
-  toggle.textContent = 'Menu';
   toggle.setAttribute('aria-label', 'Open navigation');
   if (moreButton) moreButton.textContent = 'More +';
   const closeMore = function () {
@@ -14,6 +15,17 @@
     moreMenu.hidden = true;
     more.classList.remove('open');
   };
+  const closeMenu = function () {
+    toggle.setAttribute('aria-expanded', 'false');
+    menu.classList.remove('open');
+    if (backdrop) backdrop.hidden = true;
+    closeMore();
+  };
+  const openMenu = function () {
+    toggle.setAttribute('aria-expanded', 'true');
+    menu.classList.add('open');
+    if (backdrop) backdrop.hidden = false;
+  };
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
   menu.querySelectorAll('.menu-link').forEach(function (link) {
     const linkPath = new URL(link.href, window.location.origin).pathname.replace(/\/$/, '') || '/';
@@ -21,9 +33,10 @@
   });
   toggle.addEventListener('click', function () {
     const open = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!open));
-    menu.classList.toggle('open', !open);
+    if (open) closeMenu(); else openMenu();
   });
+  if (closeButton) closeButton.addEventListener('click', closeMenu);
+  if (backdrop) backdrop.addEventListener('click', closeMenu);
   if (moreButton && moreMenu && more) {
     moreButton.addEventListener('click', function (event) {
       event.stopPropagation();
@@ -38,16 +51,12 @@
   }
   menu.querySelectorAll('a').forEach(function (link) {
     link.addEventListener('click', function () {
-      toggle.setAttribute('aria-expanded', 'false');
-      menu.classList.remove('open');
-      closeMore();
+      closeMenu();
     });
   });
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') {
-      toggle.setAttribute('aria-expanded', 'false');
-      menu.classList.remove('open');
-      closeMore();
+      closeMenu();
     }
   });
 }());
