@@ -12,6 +12,7 @@ button,input,select,textarea{max-width:100%;font:inherit}
 .course-card,.lesson-tile,.challenge-sidebar,.challenge-workspace,.compiler-sidebar,.compiler-panel,.panel,.metric{min-width:0}
 .course-card h3,.course-card p,.lesson-tile h3,.lesson-tile p,.challenge-workspace p,.legal-card{overflow-wrap:anywhere}
 .table-wrap,.tag-preview,.codebox,.editor-wrap,.io-panels{max-width:100%;overflow-x:auto}
+.landing-shell,.course-grid,.workspace-showcase,.home-about{overflow-x:clip}
 .platform-rail:not(.premium-tool-rail){display:none}
 .premium-tool-rail{display:grid;grid-template-columns:1.25fr repeat(4,minmax(0,1fr));gap:12px;max-width:1900px;margin:0 auto;padding:22px clamp(24px,5vw,68px);border-top:1px solid #dce5e8;border-bottom:1px solid #dce5e8;background:#f7faf9}
 .premium-tool-rail .platform-intro{display:flex;flex-direction:column;justify-content:center;padding-right:20px}
@@ -156,6 +157,7 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
   .site-auth-actions{order:initial;margin-left:auto!important}
 }
 @media (max-width:1023px){
+  body.nav-open{overflow:hidden}
   .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{position:sticky!important;top:0;z-index:80}
   .menu-toggle{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;margin-left:auto!important;width:auto;min-width:58px;height:40px;padding:0 12px;border:1px solid #d7e1e5;border-radius:11px;background:#fff;color:#183d61;cursor:pointer}
   .menu-toggle span:first-child{font-size:18px;line-height:1}
@@ -171,4 +173,15 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
   .site-nav-more-button{display:flex;width:100%;align-items:center;justify-content:space-between;border-radius:10px;padding:13px 14px}
   .site-nav-more-menu{position:static;min-width:0;margin:3px 0 0;padding:4px;background:#f7fafb;box-shadow:none;border-color:#e5edef}
   .site-nav-more-menu .menu-link{padding:12px 14px}
+}
+
+/* Keep compact navigation controls readable and at least 44px tall. */
+@media (max-width:1023px){
+  .menu-toggle{min-width:58px;min-height:44px}
+  .menu-toggle span:first-child{display:inline!important;font-size:18px!important;line-height:1}
+  .menu-toggle span:first-child::after{content:none!important}
+  .menu-toggle span:last-child{display:inline!important;font-size:12px!important;line-height:1}
+  .site-nav-more-button{min-height:44px}
+  .site-nav-more-button span{font-size:16px!important;line-height:1}
+  .site-nav-more-button span::after{content:none!important}
 }

@@ -8,6 +8,7 @@
   const moreButton = menu.querySelector('.site-nav-more-button');
   const moreMenu = menu.querySelector('.site-nav-more-menu');
   toggle.setAttribute('aria-label', 'Open navigation');
+  menu.setAttribute('aria-hidden', 'true');
   if (moreButton) moreButton.textContent = 'More +';
   const closeMore = function () {
     if (!moreButton || !moreMenu || !more) return;
@@ -17,13 +18,19 @@
   };
   const closeMenu = function () {
     toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Open navigation');
     menu.classList.remove('open');
+    menu.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('nav-open');
     if (backdrop) backdrop.hidden = true;
     closeMore();
   };
   const openMenu = function () {
     toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Close navigation');
     menu.classList.add('open');
+    menu.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('nav-open');
     if (backdrop) backdrop.hidden = false;
   };
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
@@ -58,5 +65,8 @@
     if (event.key === 'Escape') {
       closeMenu();
     }
+  });
+  window.addEventListener('resize', function () {
+    if (window.innerWidth >= 1024) closeMenu();
   });
 }());

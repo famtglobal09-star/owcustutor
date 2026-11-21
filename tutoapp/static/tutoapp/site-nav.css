@@ -92,6 +92,16 @@ button,input,select,textarea{max-width:100%;font:inherit}
 .site-brand-name{color:#172536;font-weight:800;letter-spacing:-.065em}
 @media(max-width:800px){.site-brand{font-size:21px}.site-brand-mark{width:29px;height:29px;font-size:20px}}
 
+/* The menu label already contains its own icon; do not add the generic plus
+   decoration used by the More button to it. */
+@media(max-width:1023px){
+  .menu-toggle span:first-child{display:inline!important;font-size:18px!important;line-height:1}
+  .menu-toggle span:first-child::after{content:none!important}
+  .menu-toggle span:last-child{display:inline!important;font-size:12px!important;line-height:1}
+  .site-nav-more-button span{font-size:16px!important;line-height:1}
+  .site-nav-more-button span::after{content:none!important}
+}
+
 /* Keep the top bar calm on medium desktop screens instead of squeezing every link into one row. */
 @media (min-width:801px) and (max-width:1350px){
   .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{position:relative;gap:12px}
