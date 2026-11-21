@@ -22,7 +22,7 @@
     <p class="count" id="result-count">{{ roles|length }} role examples across {{ groups|length }} career areas</p>
     <div id="role-groups">{% for group in groups %}<section class="category" data-category><h2>{{ group.name }} <span class="count">({{ group.roles|length }} roles)</span></h2><div class="role-grid">{% for role in group.roles %}<a class="role-card" data-role="{{ role.title|lower }} {{ role.category|lower }}" href="{% url 'resume_role' role.slug %}"><strong>{{ role.title }} Resume</strong><span>View example and guidance →</span></a>{% endfor %}</div></section>{% endfor %}</div>
   </main>
-  <script src="{% static 'tutoapp/site-nav.js' %}?v=20261116-nav3"></script>
+  <script src="{% static 'tutoapp/site-nav.js' %}?v=20261122-responsive-fix"></script>
   <script>
     const input=document.getElementById('role-search');const count=document.getElementById('result-count');
     input.addEventListener('input',()=>{const q=input.value.trim().toLowerCase();let visible=0;document.querySelectorAll('[data-category]').forEach(section=>{let sectionVisible=0;section.querySelectorAll('[data-role]').forEach(card=>{const show=!q||card.dataset.role.includes(q);card.hidden=!show;if(show){visible++;sectionVisible++}});section.hidden=!sectionVisible});count.textContent=`${visible} matching role example${visible===1?'':'s'}`});

@@ -39,6 +39,6 @@
       <section class="panel faq"><h2>Frequently asked questions</h2><dl><dt>How long should this resume be?</dt><dd>Use one focused page for an early-career profile and up to two pages when the extra experience adds relevant evidence.</dd><dt>Should I include every tool?</dt><dd>No. Prioritize tools named in the job description and prove them with responsibilities, projects, or outcomes.</dd><dt>Can I edit this example?</dt><dd>Yes. Open the Resume Builder to replace the sample details, choose a template, run an ATS check, and export your final copy.</dd></dl></section>
       <section class="panel related"><h2>Related roles</h2>{% for related in related_roles %}<a href="{% url 'resume_role' related.slug %}">{{ related.title }} Resume →</a>{% endfor %}</section>
     </aside></div>
-  </main><script src="{% static 'tutoapp/site-nav.js' %}?v=20261116-nav3"></script>
+  </main><script src="{% static 'tutoapp/site-nav.js' %}?v=20261122-responsive-fix"></script>
   {% include "tutoapp/site_footer.html" %}
 </body></html>
