@@ -21,10 +21,18 @@ from tutoapp.views import (
     java, java_compile, practice_catalog, practice_page, practice_submit, privacy_page, terms_page,
     google_site_verification, marketing_sandbox_showcase, resume_ai_ats_audit, resume_ai_suggest_responsibilities, resume_builder_page, resume_hub, resume_role, resume_seo_landing, resume_segment_sitemap, resume_sitemap, robots_txt, saved_programs, tutorials, dv360_page, cm360_page,
     auth_otp_start, auth_otp_verify, auth_otp_verify_link, auth_otp_complete, auth_session, auth_email_login, auth_firebase_login, auth_logout,
+    interview_categories, interview_category, interview_question, interview_search, interview_quiz,
 )
+
+handler404 = 'tutoapp.views.error_404'
 
 urlpatterns = [
     path('', home, name='home'),
+    path('interview-questions/', interview_categories, name='interview_categories'),
+    path('interview-questions/search/', interview_search, name='interview_search'),
+    path('interview-questions/quiz/', interview_quiz, name='interview_quiz'),
+    path('interview-questions/<slug:slug>/', interview_question, name='interview_question'),
+    path('interview-questions/category/<slug:slug>/', interview_category, name='interview_category'),
     path('about/', about_page, name='about'),
     path('contact/', contact_page, name='contact'),
     path('privacy/', privacy_page, name='privacy'),

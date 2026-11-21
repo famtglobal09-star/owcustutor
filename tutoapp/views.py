@@ -30,8 +30,13 @@ from django.urls import reverse
 from .models import EmailVerificationChallenge, FirebaseIdentity, PracticeSubmission, ResumeSeoPage, SavedProgram
 from .resume_catalog import EXPERIENCE_OPTIONS, ROLE_BY_SLUG, ROLE_CATALOG, ROLE_GROUPS, role_content
 from .resume_seo import LANDING_PAGES
+from .interview_catalog import CATEGORIES, QUESTIONS, QUIZ, category_for, question_for
 
 logger = logging.getLogger(__name__)
+
+
+def error_404(request, exception):
+    return render(request, '404.html', status=404)
 
 try:
     import firebase_admin
@@ -87,7 +92,57 @@ PRACTICE_CHALLENGES = [
 
 @ensure_csrf_cookie
 def home(request):
-    return render(request, 'tutoapp/home.html')
+    return render(request, 'tutoapp/home.html', {
+        'categories': CATEGORIES,
+        'popular_questions': QUESTIONS[:6],
+        'seo_title': 'OWCUS – Interview Questions and Answers for IT Jobs',
+        'seo_description': 'Prepare for IT interviews with OWCUS. Explore Manual Testing, SQL, Python, Java, Selenium, Automation Testing and frequently asked interview questions with detailed answers and practical examples.',
+    })
+
+
+def interview_categories(request):
+    return render(request, 'tutoapp/interview_categories.html', {'categories': CATEGORIES, 'seo_title': 'IT Interview Categories | OWCUS', 'seo_description': 'Explore practical interview questions for testing, SQL, Python, Java, Selenium, APIs, Agile and HR interviews.'})
+
+
+def interview_category(request, slug):
+    category = category_for(slug)
+    if not category:
+        from django.http import Http404
+        raise Http404('Interview category not found')
+    questions = [q for q in QUESTIONS if q['category'] == slug]
+    return render(request, 'tutoapp/interview_category.html', {'category': category, 'questions': questions, 'seo_title': f"{category['name']} Interview Questions | OWCUS", 'seo_description': f"Prepare with practical {category['name']} interview questions and detailed answers for freshers and experienced professionals."})
+
+
+def interview_question(request, slug):
+    question = question_for(slug)
+    if not question:
+        from django.http import Http404
+        raise Http404('Interview question not found')
+    category = category_for(question['category'])
+    index = QUESTIONS.index(question)
+    related = [q for q in QUESTIONS if q['category'] == question['category'] and q['slug'] != slug][:3]
+    previous = QUESTIONS[index - 1] if index > 0 else None
+    following = QUESTIONS[index + 1] if index < len(QUESTIONS) - 1 else None
+    return render(request, 'tutoapp/interview_question.html', {'question': question, 'category': category, 'related': related, 'previous': previous, 'following': following, 'seo_title': f"{question['title']} | OWCUS Interview Questions", 'seo_description': question['answer'][:155]})
+
+
+def interview_search(request):
+    query = request.GET.get('q', '').strip()
+    difficulty = request.GET.get('difficulty', '')
+    audience = request.GET.get('audience', '')
+    results = QUESTIONS
+    if query:
+        needle = query.lower()
+        results = [q for q in results if needle in ' '.join([q['title'], q['answer'], q['category'], q['example']]).lower()]
+    if difficulty:
+        results = [q for q in results if q['difficulty'] == difficulty]
+    if audience:
+        results = [q for q in results if q['audience'] == audience]
+    return render(request, 'tutoapp/interview_search.html', {'questions': results, 'query': query, 'difficulty': difficulty, 'audience': audience, 'seo_title': 'Search Interview Questions | OWCUS', 'seo_description': 'Search OWCUS interview questions by topic, difficulty and candidate experience level.', 'seo_robots': 'noindex,follow,max-image-preview:large'})
+
+
+def interview_quiz(request):
+    return render(request, 'tutoapp/interview_quiz.html', {'quiz': QUIZ, 'seo_title': 'Interview Practice Quiz | OWCUS', 'seo_description': 'Test your interview readiness with a short OWCUS quiz covering testing, SQL, APIs and Java.'})
 
 def about_page(request):
     return render(request, 'tutoapp/about.html')
@@ -297,10 +352,11 @@ def resume_role(request, slug):
 
 def _resume_seo_paths():
     urls = [
-        '/', '/about/', '/contact/', '/privacy/', '/terms/', '/tutorials/', '/html/', '/css/', '/javascript/', '/python/',
-        '/csharp/', '/data-science/', '/manual-testing/', '/practical-skills/',
-        '/java/', '/compiler/', '/practice/', '/resume/', '/marketing-sandboxes/', '/dv360/', '/cm360/',
+        '/', '/about/', '/contact/', '/privacy/', '/terms/', '/resume/',
+        '/interview-questions/', '/interview-questions/quiz/',
     ]
+    urls += [f"/interview-questions/category/{category['slug']}/" for category in CATEGORIES]
+    urls += [f"/interview-questions/{question['slug']}/" for question in QUESTIONS]
     managed_paths = {page.path: page for page in ResumeSeoPage.objects.all()}
     def sitemap_allowed(path):
         page = managed_paths.get(path)

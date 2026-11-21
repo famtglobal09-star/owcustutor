@@ -1,4 +1,5 @@
 <link rel="canonical" href="https://www.owcus.com{{ request.path }}">
+<meta name="description" content="{{ seo_description }}">
 <meta name="robots" content="{{ seo_robots|default:'index,follow,max-image-preview:large' }}">
 <meta property="og:type" content="{{ seo_og_type|default:'website' }}">
 <meta property="og:site_name" content="OWCUS">
@@ -8,3 +9,4 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{{ seo_title }}">
 <meta name="twitter:description" content="{{ seo_description }}">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.owcus.com/#organization","name":"OWCUS","url":"https://www.owcus.com/","logo":{"@type":"ImageObject","url":"https://www.owcus.com/static/tutoapp/images/owcus-logo.webp"}},{"@type":"WebSite","@id":"https://www.owcus.com/#website","name":"OWCUS","url":"https://www.owcus.com/","publisher":{"@id":"https://www.owcus.com/#organization"},"potentialAction":{"@type":"SearchAction","target":"https://www.owcus.com/interview-questions/search/?q={search_term_string}","query-input":"required name=search_term_string"}}]}</script>
