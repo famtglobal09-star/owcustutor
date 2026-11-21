@@ -149,7 +149,7 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 @media (min-width:1024px){
   .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{position:sticky!important;top:0;z-index:80;flex-wrap:nowrap}
   .menu-toggle{display:none!important}
-  .site-menu{display:flex!important;position:static;order:initial;flex:1 1 auto;flex-wrap:wrap;align-items:center;justify-content:flex-start!important;gap:2px;margin-left:clamp(12px,2vw,28px)!important;padding:0;background:transparent;border:0;box-shadow:none;overflow:visible}
+  .site-menu{display:flex!important;position:static;order:initial;flex:1 1 auto;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-start!important;gap:2px;margin-left:clamp(12px,2vw,28px)!important;padding:0;background:transparent;border:0;box-shadow:none;overflow:visible;white-space:nowrap}
   .site-menu .menu-link{display:inline-flex!important;padding:9px 8px;font-size:13px}
   .site-nav-more{position:relative;display:block}
   .site-nav-more-button{padding:9px 10px}
