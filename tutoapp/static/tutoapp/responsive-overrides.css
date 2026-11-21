@@ -156,6 +156,16 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
   .site-nav-more-menu{position:absolute;top:calc(100% + 8px);right:0;left:auto;min-width:220px}
   .site-auth-actions{order:initial;margin-left:auto!important}
 }
+/* Windows display scaling can make a laptop's CSS viewport narrower than its
+   physical width. Keep landscape laptop navigation horizontal in that case. */
+@media (min-width:901px) and (max-width:1023px){
+  .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{position:sticky!important;top:0;z-index:80;flex-wrap:nowrap}
+  .menu-toggle{display:none!important}
+  .site-menu,.site-menu.open{display:flex!important;position:static!important;order:initial;flex:1 1 auto;flex-wrap:wrap;align-items:center;justify-content:flex-start!important;gap:2px;margin-left:clamp(12px,2vw,28px)!important;padding:0;background:transparent;border:0;box-shadow:none;overflow:visible}
+  .site-menu .menu-link{display:inline-flex!important;padding:9px 8px;font-size:13px}
+  .site-nav-backdrop{display:none!important}
+  .site-auth-actions{order:initial;margin-left:auto!important}
+}
 @media (max-width:1023px){
   body.nav-open{overflow:hidden}
   .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{position:sticky!important;top:0;z-index:80}
@@ -184,4 +194,14 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
   .site-nav-more-button{min-height:44px}
   .site-nav-more-button span{font-size:16px!important;line-height:1}
   .site-nav-more-button span::after{content:none!important}
+}
+
+/* Final laptop-landscape override must follow the tablet drawer rules. */
+@media (min-width:901px) and (max-width:1023px){
+  .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{position:sticky!important;top:0;z-index:80;flex-wrap:nowrap}
+  .menu-toggle{display:none!important}
+  .site-menu,.site-menu.open{display:flex!important;position:static!important;order:initial;flex:1 1 auto;flex-wrap:wrap;align-items:center;justify-content:flex-start!important;gap:2px;margin-left:clamp(12px,2vw,28px)!important;padding:0;background:transparent;border:0;box-shadow:none;overflow:visible}
+  .site-menu .menu-link{display:inline-flex!important;padding:9px 8px;font-size:13px}
+  .site-nav-backdrop{display:none!important}
+  .site-auth-actions{order:initial;margin-left:auto!important}
 }
