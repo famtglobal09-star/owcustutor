@@ -16,6 +16,12 @@
     moreMenu.hidden = true;
     more.classList.remove('open');
   };
+  const openMore = function () {
+    if (!moreButton || !moreMenu || !more) return;
+    moreButton.setAttribute('aria-expanded', 'true');
+    moreMenu.hidden = false;
+    more.classList.add('open');
+  };
   const closeMenu = function () {
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-label', 'Open navigation');
@@ -32,6 +38,7 @@
     menu.setAttribute('aria-hidden', 'false');
     document.body.classList.add('nav-open');
     if (backdrop) backdrop.hidden = false;
+    if (window.innerWidth < 1024) openMore();
   };
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
   menu.querySelectorAll('.menu-link').forEach(function (link) {
@@ -53,7 +60,7 @@
       more.classList.toggle('open', !open);
     });
     document.addEventListener('click', function (event) {
-      if (!more.contains(event.target)) closeMore();
+      if (!more.contains(event.target) && !toggle.contains(event.target)) closeMore();
     });
   }
   menu.querySelectorAll('a').forEach(function (link) {
