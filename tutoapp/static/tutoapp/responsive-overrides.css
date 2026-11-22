@@ -117,7 +117,7 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 
 /* Laptops and desktops keep the full navigation row; phones and tablets use
    the compact menu defined above. */
-@media (min-width:1024px){
+@media (min-width:801px){
   .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{flex-wrap:wrap}
   .site-menu{display:flex!important;position:static;width:auto;flex:1 1 520px;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:2px;order:2}
   .site-menu .menu-link{display:inline-flex!important;padding:9px 8px;font-size:13px}
@@ -156,7 +156,7 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
   .site-nav-more-menu{position:absolute;top:calc(100% + 8px);right:0;left:auto;min-width:220px}
   .site-auth-actions{order:initial;margin-left:auto!important}
 }
-@media (max-width:1023px){
+@media (max-width:800px){
   body.nav-open{overflow:hidden}
   .landing-header,.legal-header,.site-header,.practice-header,.compiler-header{position:sticky!important;top:0;z-index:80}
   .menu-toggle{display:inline-flex!important;align-items:center;justify-content:center;gap:7px;margin-left:auto!important;width:auto;min-width:58px;height:40px;padding:0 12px;border:1px solid #d7e1e5;border-radius:11px;background:#fff;color:#183d61;cursor:pointer}
@@ -176,7 +176,7 @@ pre{max-width:100%;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere}
 }
 
 /* Keep compact navigation controls readable and at least 44px tall. */
-@media (max-width:1023px){
+@media (max-width:800px){
   .menu-toggle{min-width:58px;min-height:44px}
   .menu-toggle span:first-child{display:inline!important;font-size:18px!important;line-height:1}
   .menu-toggle span:first-child::after{content:none!important}

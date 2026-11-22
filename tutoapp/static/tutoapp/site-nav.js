@@ -38,7 +38,7 @@
     menu.setAttribute('aria-hidden', 'false');
     document.body.classList.add('nav-open');
     if (backdrop) backdrop.hidden = false;
-    if (window.innerWidth < 1024) openMore();
+    if (window.innerWidth < 801) openMore();
   };
   const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
   menu.querySelectorAll('.menu-link').forEach(function (link) {
@@ -74,6 +74,6 @@
     }
   });
   window.addEventListener('resize', function () {
-    if (window.innerWidth >= 1024) closeMenu();
+    if (window.innerWidth >= 801) closeMenu();
   });
 }());
