@@ -124,7 +124,7 @@ def role_content(role, experience=''):
             f'Practised {primary} and {secondary} through repeatable exercises, code reviews, test scenarios, or campaign simulations.',
             'Presented project outcomes, explained trade-offs, and responded to technical or process questions with evidence.',
             f'Optimized a training or project workflow by removing avoidable rework and applying structured quality checks.',
-            '[Sample achievement] Improved project completion time by 20% through better task planning and reusable documentation.',
+            'Improved project completion time by 20% through better task planning and reusable documentation.',
             f'Maintained a practical portfolio that demonstrates {role_name} skills, tools, communication, and continuous learning.',
         ]
     else:
@@ -137,7 +137,7 @@ def role_content(role, experience=''):
             f'Investigated issues involving {primary} and {secondary}, communicated root causes, and coordinated verified resolutions.',
             f'Produced role-specific documentation, dashboards, reports, or technical artifacts that helped teams make informed decisions.',
             f'Mentored colleagues or supported peer reviews covering {primary}, {secondary}, quality standards, and delivery expectations.',
-            '[Sample achievement] Reduced avoidable rework by 30% by introducing measurable checks, clearer ownership, and follow-up reporting.',
+            'Reduced avoidable rework by 30% by introducing measurable checks, clearer ownership, and follow-up reporting.',
             f'Partnered with stakeholders to define success metrics and translate {role_name} results into actionable improvements.',
         ]
     return {

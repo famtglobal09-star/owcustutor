@@ -54,6 +54,7 @@ urlpatterns = [
     path('compiler/', compiler_page, name='compiler'),
     path('practice/', practice_page, name='practice'),
     path('resume-builder/', resume_builder_page, name='resume_builder'),
+    path('resume-builder/templates/<slug:template_slug>/', resume_builder_page, name='resume_builder_template'),
     path('resume/', resume_hub, name='resume_hub'),
     path('resume-guides/<slug:slug>/', resume_seo_landing, name='resume_seo_landing'),
     path('resume/<slug:slug>/', resume_role, name='resume_role'),

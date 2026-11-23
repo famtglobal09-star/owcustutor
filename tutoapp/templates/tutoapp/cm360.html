@@ -10,8 +10,10 @@
   <link rel="stylesheet" href="{% static 'tutoapp/cm360/styles.css' %}">
   <link rel="stylesheet" href="{% static 'tutoapp/cm360/responsive.css' %}">
   <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261122-global-menu">
 </head>
 <body>
+  <header class="landing-header global-site-header"><a class="brand" href="/" aria-label="OWCUS home"><img class="brand-logo" src="{% static 'tutoapp/images/owcus-logo.webp' %}" alt="OWCUS"></a>{% include "tutoapp/site_nav_clean.html" %}</header>
   <aside class="rail"><div class="brand">CM<span>360</span></div><nav id="nav">
     <button class="active" data-page="overview"><b>◉</b> Overview</button><button data-page="advertisers"><b>♣</b> Advertisers</button><button data-page="campaigns"><b>▤</b> Campaigns</button><button data-page="placements"><b>▥</b> Placements</button><button data-page="creatives"><b>✧</b> Creatives &amp; ads</button><button data-page="tags"><b>⌘</b> Tags &amp; testing</button><button data-page="audiences"><b>◉</b> Audiences</button><button data-page="reports"><b>▥</b> Reports</button>
   </nav><div class="rail-bottom"><span class="avatar">S</span><span>Sandbox account<br><small>Local workspace</small></span></div></aside>

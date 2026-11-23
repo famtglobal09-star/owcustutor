@@ -30,10 +30,25 @@
     .resume-builder-header .site-auth-actions{margin-left:4px}
     .resume-builder-header .site-auth-signup{box-shadow:0 5px 12px rgba(230,117,52,.16)}
     .resume-builder-host #root{min-width:0;overflow:hidden}
+    /* Keep PDF/Word export independent from the editor zoom and responsive preview styles. */
+    .resume-builder-host #print-resume-target{width:794px!important;min-width:794px!important;box-sizing:border-box!important;overflow:visible!important}
+    .resume-builder-host #print-resume-target .resume-paper{width:794px!important;min-width:794px!important;max-width:794px!important;min-height:1123px;box-sizing:border-box!important;transform:none!important;transform-origin:top left!important;margin:0!important;overflow:visible!important;box-shadow:none!important}
+    .resume-builder-host #print-resume-target h1,
+    .resume-builder-host #print-resume-target h2,
+    .resume-builder-host #print-resume-target h3,
+    .resume-builder-host #print-resume-target h4{box-sizing:border-box;line-height:1.2!important;margin-top:0}
+    .resume-builder-host #print-resume-target .space-y-6>*+*,
+    .resume-builder-host #print-resume-target .space-y-5>*+*,
+    .resume-builder-host #print-resume-target .space-y-4>*+*{margin-top:1.25rem!important}
+    .resume-builder-host #print-resume-target .break-inside-avoid{break-inside:avoid;page-break-inside:avoid}
     .resume-builder-host .premium-gallery{min-width:0;overflow:hidden}
     .resume-builder-host .premium-hero,.resume-builder-host .premium-toolbar{position:relative}
     .resume-builder-host .premium-gallery main{width:min(calc(100% - 32px),1280px);margin-inline:auto}
     .resume-builder-host .premium-card{border-radius:22px}
+    .resume-builder-host .premium-gallery button:focus-visible,
+    .resume-builder-host .premium-gallery a:focus-visible,
+    .resume-builder-host .premium-gallery [role="button"]:focus-visible{outline:3px solid #f97316;outline-offset:3px}
+    .resume-builder-host .premium-gallery img{max-width:100%;height:auto}
     /* The site-wide OWCUS header is the single authentication entry point. */
     .resume-builder-host .owcus-legacy-auth-control,
     .resume-builder-host .owcus-legacy-auth-modal{display:none!important}
@@ -66,7 +81,7 @@
     }
   </style>
 </head>
-<body class="resume-builder-host">
+<body class="resume-builder-host" data-template-slug="{{ builder_template_slug|default:'' }}">
   <header class="resume-builder-header">
     <a class="resume-brand" href="/" aria-label="OWCUS home">
       <span class="resume-brand-mark" aria-hidden="true">o</span>
@@ -79,7 +94,35 @@
   <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">OWCUS AI Resume Builder</h1>
   <div id="root"></div>
   <script src="{% static 'tutoapp/site-nav.js' %}?v=20261122-responsive-fix"></script>
-  <script type="module" crossorigin src="{% static 'tutoapp/resume-builder/assets/index-CBai2W5M.js' %}"></script>
+  <script>
+    // A previously opened template can leave an empty per-template draft behind.
+    // Remove only those empty records before the React builder initializes so the
+    // selected role can load its complete demo profile. Real user resumes stay intact.
+    (() => {
+      try {
+        const storageKey = 'ai_resume_template_drafts';
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        let changed = false;
+        Object.keys(saved).forEach((key) => {
+          const draft = saved[key] || {};
+          const info = draft.personalInfo || {};
+          const empty = !draft.isDemo && !draft.demoDisclaimer &&
+            !info.fullName && !info.title && !info.phone && !info.email &&
+            !draft.summary && !draft.experience?.length && !draft.skills?.length &&
+            !draft.education?.length && !draft.projects?.length &&
+            !draft.certifications?.length && !draft.achievements?.length;
+          if (empty) {
+            delete saved[key];
+            changed = true;
+          }
+        });
+        if (changed) localStorage.setItem(storageKey, JSON.stringify(saved));
+      } catch (error) {
+        console.warn('Unable to clean empty resume drafts', error);
+      }
+    })();
+  </script>
+  <script type="module" crossorigin src="{% static 'tutoapp/resume-builder/assets/index-CBai2W5M.js' %}?v=20261122-demo-draft-fix"></script>
   <script>
     (() => {
       const root = document.getElementById('root');
@@ -122,6 +165,62 @@
         childList: true,
         subtree: true
       });
+
+      const slugify = (value) => value.toLowerCase().replace(/[—–-]/g, ' ').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const loadNamedTemplateSample = () => {
+        if (!window.location.pathname.includes('/resume-builder/templates/')) return;
+        if (document.body.dataset.namedSampleLoaded === 'true') return;
+        const emptyDraft = [...root.querySelectorAll('p')].some((node) => /0% complete/.test(node.textContent || '')) ||
+          [...root.querySelectorAll('button')].some((button) => /My Draft Resume \(Empty\)/.test(button.textContent || ''));
+        if (!emptyDraft) return;
+        const sampleButton = [...root.querySelectorAll('button')].find((button) => /Resume Sample/.test(button.textContent || ''));
+        if (!sampleButton) return;
+        document.body.dataset.namedSampleLoaded = 'pending';
+        setTimeout(() => {
+          sampleButton.click();
+          document.body.dataset.namedSampleLoaded = 'true';
+        }, 150);
+      };
+      new MutationObserver(loadNamedTemplateSample).observe(root, {childList: true, subtree: true});
+      loadNamedTemplateSample();
+
+      const getTemplateCard = (slug) => [...root.querySelectorAll('.premium-card')].find((card) => {
+        const heading = card.querySelector('h3');
+        return heading && slugify(heading.textContent || '').includes(slug);
+      });
+      const syncTemplateUrl = (slug, screen) => {
+        if (!slug) return;
+        const url = new URL(window.location.href);
+        url.searchParams.set('screen', screen);
+        url.searchParams.set('template', slug);
+        window.history.replaceState(window.history.state, '', `${url.pathname}?${url.searchParams.toString()}${url.hash}`);
+      };
+
+      root.addEventListener('click', (event) => {
+        const button = event.target.closest('button');
+        if (!button || !/^(Use Template|Preview)$/.test(button.textContent.replace(/\s+/g, ' ').trim())) return;
+        const card = button.closest('.premium-card');
+        const heading = card && card.querySelector('h3');
+        if (heading) syncTemplateUrl(slugify(heading.textContent || ''), button.textContent.includes('Use') ? 'assistant' : 'gallery');
+      }, true);
+
+      const restoreTemplateFromUrl = () => {
+        const url = new URL(window.location.href);
+        const pathSlug = document.body.dataset.templateSlug;
+        const slug = pathSlug || url.searchParams.get('template');
+        if (!slug) return;
+        const card = getTemplateCard(slug);
+        if (!card) return;
+        if (pathSlug && document.body.dataset.templateRestored !== 'true') {
+          document.body.dataset.templateRestored = 'true';
+          card.click();
+          return;
+        }
+        const useButton = [...card.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Use Template');
+        if (useButton && url.searchParams.get('screen') !== 'assistant') useButton.click();
+      };
+      new MutationObserver(restoreTemplateFromUrl).observe(root, {childList: true, subtree: true});
+      restoreTemplateFromUrl();
     })();
   </script>
   {% include "tutoapp/site_footer.html" %}

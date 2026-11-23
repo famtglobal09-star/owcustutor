@@ -15,7 +15,9 @@
 <meta property="og:title" content="{{ course_title|default:'OWCUS Programming Tutorial' }}">
 <meta property="og:description" content="{{ course_description|default:'Learn programming with detailed explanations, examples, interactive editor and live output.' }}">
 <meta property="og:url" content="https://www.owcus.com{{ request.path }}">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="https://www.owcus.com/static/tutoapp/images/owcus-logo.webp">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.owcus.com/static/tutoapp/images/owcus-logo.webp">
 <link rel="stylesheet" href="/static/tutoapp/site-nav.css?v=20261120-nav-refine">
 <link rel="stylesheet" href="/static/tutoapp/legal.css">
 <script type="application/ld+json" id="ld">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://www.owcus.com/#organization","name":"OWCUS","url":"https://www.owcus.com/"},{"@type":"WebSite","@id":"https://www.owcus.com/#website","name":"OWCUS","url":"https://www.owcus.com/","publisher":{"@id":"https://www.owcus.com/#organization"},"inLanguage":"en"}]}</script>
@@ -190,7 +192,7 @@ body{background:linear-gradient(135deg,var(--bg) 0%,var(--bg) 72%,var(--lt) 100%
 <a class="skip" href="#center">Skip to lesson content</a>
 <noscript><main style="padding:20px;font:16px/1.6 system-ui"><h1>Free Programming Tutorials</h1><p>Learn HTML with explanations, examples and live output. The interactive lessons and live code editor need JavaScript to be turned on in your browser.</p></main></noscript>
 <header class="top">
-<a class="logo brand" id="logo" href="/" aria-label="OWCUS home"><span class="brand-mark">o</span><span style="display:inline!important;margin-left:0!important;color:#172536!important;font:700 24px/1.7 system-ui,-apple-system,&quot;Segoe UI&quot;,sans-serif!important;letter-spacing:-.06em!important;text-transform:none!important">owcus</span></a>
+<a class="logo brand" id="logo" href="/" aria-label="OWCUS home"><img class="brand-logo" src="/static/tutoapp/images/owcus-logo.webp" alt="OWCUS"></a>
 {% include "tutoapp/site_nav_clean.html" %}
 <div class="langs" id="langs"><button data-l="html" class="on">HTML</button><button data-l="css">CSS</button><button data-l="js">JavaScript</button><button data-l="py">Python</button><button data-l="cs">C#</button><button data-l="ds">Data Science</button><button data-l="mt">Manual Testing</button></div>
 <div class="views" id="views" style="display:none"><button data-v="lesson">Lesson</button><button data-v="code">Code</button><button data-v="out">Output</button><button data-v="all" class="on">All</button></div>
@@ -200,6 +202,7 @@ body{background:linear-gradient(135deg,var(--bg) 0%,var(--bg) 72%,var(--lt) 100%
   .top{height:auto;min-height:68px;flex-wrap:wrap;padding:10px clamp(16px,3.5vw,68px);gap:8px;background:#fff;color:#172536;border-bottom:1px solid #edf0f1;box-shadow:0 4px 18px rgba(17,37,56,.06)}
 .top .logo{order:1;color:#172536;font-size:21px;letter-spacing:-.06em;margin-right:8px}
 .top .logo.brand{display:inline-flex;align-items:center;gap:9px;font:700 24px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:0;text-decoration:none}
+.top .logo.brand .brand-logo{display:block;width:138px;height:auto;max-height:42px;object-fit:contain}
 .top .logo.brand .brand-mark{display:grid;place-items:center;width:28px;height:28px;margin:0;border-radius:50%;background:#172536;color:#fff;font:700 21px Georgia;letter-spacing:0}
 .top .logo.brand>span:last-child{display:inline;margin:0;color:#172536;font:700 24px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.06em;text-transform:none}
   .top .logo:not(.brand) span{display:inline-block;margin-left:7px;color:#78909e;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
@@ -209,7 +212,26 @@ body{background:linear-gradient(135deg,var(--bg) 0%,var(--bg) 72%,var(--lt) 100%
   .top .langs{order:6;flex-basis:100%;width:100%;padding-top:2px;border-top:1px solid #edf0f1}
   .top .langs button{border:0;border-radius:999px;padding:8px 12px;background:transparent;color:#49627c;font-size:12px;font-weight:700;cursor:pointer}
   .top .langs button:hover,.top .langs button.on{background:#edf4f5;color:#183d61}
-  @media(max-width:1550px){.top{position:sticky;top:0;z-index:30}.top .menu-toggle{display:inline-flex;margin-left:0}.top .site-menu{margin-left:0}.top .site-auth-actions{margin-left:auto}}
+  /* Match the shared OWCUS navigation contract: full row above 800px,
+     compact drawer at 800px and below. */
+  @media (min-width:801px){
+    .top{position:sticky;top:0;z-index:30;flex-wrap:wrap}
+    .top .menu-toggle{display:none!important}
+    .top .site-menu{display:flex!important;position:static;order:3;flex:1 1 auto;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:2px;margin:0 8px!important;padding:0;background:transparent;border:0;box-shadow:none;overflow:visible;width:auto}
+    .top .site-menu .menu-link{display:inline-flex!important;padding:9px 8px;font-size:13px}
+    .top .site-nav-more{position:relative;display:block}
+    .top .site-nav-more-menu{position:absolute;top:calc(100% + 8px);right:0;left:auto;min-width:220px}
+    .top .site-auth-actions{order:4;margin-left:auto!important}
+    .top .langs{order:6;flex-basis:100%;width:100%;overflow-x:auto;white-space:nowrap}
+  }
+  @media (max-width:800px){
+    .top{position:sticky;top:0;z-index:30}
+    .top .menu-toggle{display:inline-flex!important;margin-left:auto!important}
+    .top .site-menu{display:none;position:absolute;top:calc(100% + 8px);right:12px;left:auto;width:min(360px,calc(100% - 24px));z-index:90;flex-direction:column;align-items:stretch;gap:3px;margin:0!important;padding:10px;background:#fff;border:1px solid #dbe4e7;border-radius:16px;box-shadow:0 16px 36px rgba(17,37,56,.2);max-height:calc(100dvh - 88px);overflow:auto}
+    .top .site-menu.open{display:flex}
+    .top .site-menu .menu-link{display:block!important;padding:13px 14px;border-radius:10px}
+    .top .site-nav-more-menu{position:static;min-width:0;margin:3px 0 0;padding:4px;background:#f7fafb;box-shadow:none;border-color:#e5edef}
+  }
 </style>
 <div id="app" class="v-lesson">
 <aside id="side" aria-label="Course navigation">
@@ -225,7 +247,6 @@ body{background:linear-gradient(135deg,var(--bg) 0%,var(--bg) 72%,var(--lt) 100%
 <div class="editor-collapse"><strong>Try It Yourself</strong><button type="button" id="hideEditor" aria-label="Hide editor">− Hide</button></div>
 <div class="pane" id="edp"><div class="ph"><span>Editor</span><button id="run">Run ▶</button><button id="reset">Reset</button></div><textarea id="ed" spellcheck="false" aria-label="HTML code editor"></textarea></div>
 <div class="pane" id="outp"><div class="ph"><span>Output</span></div><iframe id="out" title="Output" sandbox="allow-scripts allow-forms"></iframe><pre id="pyout" aria-live="polite"></pre></div>
-<aside id="adrail" aria-label="Advertisement space"><div class="adbox"><small>ADVERTISEMENT</small><span>Ad space</span><small>Responsive 300 × 250</small></div><div class="adbox adbox2"><small>ADVERTISEMENT</small><span>Ad space</span></div></aside>
 </section>
 </div>
 </div>
@@ -511,7 +532,7 @@ function setLang(py){
   var D=py?PYD:HTD,ov=document.querySelector('a.ov');
   document.body.dataset.lang=lg;$('#toc').innerHTML=D.toc;$('#q').value='';
   ov.href='#'+D.ids[0];ov.dataset.id=D.ids[0];
-  $('#logo').innerHTML='<span class="brand-mark">o</span><span style="display:inline!important;margin-left:0!important;color:#172536!important;font:700 24px/1.7 system-ui,-apple-system,&quot;Segoe UI&quot;,sans-serif!important;letter-spacing:-.06em!important;text-transform:none!important">owcus</span>';
+  $('#logo').innerHTML='<img class="brand-logo" src="/static/tutoapp/images/owcus-logo.webp" alt="OWCUS">';
   document.querySelectorAll('#langs button').forEach(function(b){b.classList.toggle('on',b.dataset.l===lg)});
   if(py)loadSk();
 }
@@ -717,7 +738,7 @@ function setLang(lg){
   var D=LG[lg],ov=document.querySelector('a.ov');
   document.body.dataset.lang=lg;$('#toc').innerHTML=D.toc;$('#q').value='';
   ov.href='#'+D.ids[0];ov.dataset.id=D.ids[0];
-  $('#logo').innerHTML='<span class="brand-mark">o</span><span style="display:inline!important;margin-left:0!important;color:#172536!important;font:700 24px/1.7 system-ui,-apple-system,&quot;Segoe UI&quot;,sans-serif!important;letter-spacing:-.06em!important;text-transform:none!important">owcus</span>';
+  $('#logo').innerHTML='<img class="brand-logo" src="/static/tutoapp/images/owcus-logo.webp" alt="OWCUS">';
   document.querySelectorAll('#langs button').forEach(function(b){b.classList.toggle('on',b.dataset.l===lg)});
   if(lg==='py')loadSk();
 }

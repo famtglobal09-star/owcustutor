@@ -18,7 +18,7 @@ class CompilerPlatformTests(TestCase):
             responsibilities = content['responsibilities']
             self.assertEqual(len(responsibilities), 10, role['title'])
             self.assertEqual(len(set(responsibilities)), 10, role['title'])
-            self.assertTrue(any('[Sample achievement]' in item for item in responsibilities), role['title'])
+            self.assertFalse(any('[Sample achievement]' in item for item in responsibilities), role['title'])
             self.assertTrue(any(role['title'].lower() in item.lower() for item in responsibilities), role['title'])
 
     def test_fresher_role_uses_internship_and_project_responsibilities_by_default(self):
@@ -46,6 +46,7 @@ class CompilerPlatformTests(TestCase):
         self.assertEqual(hub.status_code, 200)
         self.assertContains(hub, 'Find Your Perfect Resume')
         self.assertContains(hub, '/resume/qa-automation-engineer/')
+        self.assertContains(hub, '"item": "https://www.owcus.com/resume/qa-automation-engineer/"')
         role = self.client.get('/resume/qa-automation-engineer/?experience=5-years-experience')
         self.assertEqual(role.status_code, 200)
         self.assertContains(role, 'QA Automation Engineer Resume Example')
@@ -60,7 +61,9 @@ class CompilerPlatformTests(TestCase):
         robots = self.client.get('/robots.txt')
         self.assertEqual(robots.status_code, 200)
         self.assertContains(robots, 'Sitemap:')
-        self.assertContains(robots, 'Disallow: /dashboard/')
+        self.assertContains(robots, 'User-agent: *')
+        self.assertContains(robots, 'Allow: /')
+        self.assertNotContains(robots, 'Disallow:')
         self.assertEqual(self.client.get('/sitemaps/resume-roles.xml').status_code, 200)
         self.assertContains(self.client.get('/sitemaps/resume-guides.xml'), '/resume-guides/ats-resumes/')
 

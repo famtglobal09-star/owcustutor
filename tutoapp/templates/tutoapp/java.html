@@ -58,7 +58,21 @@ body{font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow
 .top .langs{order:6;flex-basis:100%;width:100%;margin-left:0;padding-top:2px;border-top:1px solid #edf0f1;display:flex;gap:6px;overflow:auto}
 .top .langs a{border:0;border-radius:999px;padding:8px 12px;background:transparent;color:#49627c;font:700 12px system-ui,-apple-system,"Segoe UI",sans-serif}
 .top .langs a.active,.top .langs a:hover{background:#edf4f5;color:#183d61}
-@media(max-width:1550px){.top .menu-toggle{display:inline-flex}.top .site-menu{margin-left:0}.top .site-auth-actions{margin-left:auto}}
+@media (min-width:801px){
+  .top{flex-wrap:nowrap;position:sticky;top:0;z-index:80}
+  .top .menu-toggle{display:none!important}
+  .top .site-menu{display:flex!important;position:static;order:initial;flex:1 1 auto;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:flex-start;gap:2px;margin:0 8px!important;padding:0;background:transparent;border:0;box-shadow:none;overflow:visible;white-space:nowrap}
+  .top .site-menu .menu-link{display:inline-flex!important;padding:9px 8px;font-size:13px}
+  .top .site-auth-actions{margin-left:auto!important}
+}
+@media (max-width:800px){
+  .top{position:sticky;top:0;z-index:80;min-height:68px;height:auto;padding:10px 16px;flex-wrap:wrap}
+  .top .menu-toggle{display:inline-flex!important;margin-left:auto!important}
+  .top .site-menu{display:none;position:absolute;top:calc(100% + 8px);right:12px;left:auto;width:min(360px,calc(100% - 24px));z-index:90;flex-direction:column;align-items:stretch;gap:3px;margin:0!important;padding:10px;background:#fff;border:1px solid #dbe4e7;border-radius:16px;box-shadow:0 16px 36px rgba(17,37,56,.2);max-height:calc(100dvh - 88px);overflow:auto}
+  .top .site-menu.open{display:flex}
+  .top .site-menu .menu-link{display:block!important;padding:13px 14px;border-radius:10px}
+  .top .site-nav-more-menu{position:static;min-width:0;margin:3px 0 0;padding:4px;background:#f7fafb;box-shadow:none;border-color:#e5edef}
+}
 </style>
 </head>
 <body>
@@ -66,7 +80,7 @@ body{font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow
 <div class="layout" id="layout">
 <aside class="sidebar" aria-label="Java course navigation"><div class="side-tools"><input class="search" id="search" type="search" placeholder="Search Java lessons..." aria-label="Search Java lessons"><div class="tool-row"><button id="expand">Expand all</button><button id="collapse">Collapse all</button></div></div><nav id="nav"></nav></aside>
 <main class="center" id="center" tabindex="-1"></main>
-<aside class="editor" id="editor" aria-label="Java Try It Yourself"><div class="editor-head"><span>Try Java Yourself</span><button id="close" title="Hide editor">×</button></div><div class="editor-body"><div class="editor-label">Editable Java 17 source</div><textarea id="source" spellcheck="false"></textarea><div class="editor-actions"><button id="run">Run</button><button id="reset">Reset</button><button id="copy">Copy</button></div><pre class="editor-output" id="editor-output">Run a program to see compiler output here.</pre><div class="ad">ADVERTISEMENT<br>Responsive 300 × 250</div></div></aside>
+<aside class="editor" id="editor" aria-label="Java Try It Yourself"><div class="editor-head"><span>Try Java Yourself</span><button id="close" title="Hide editor">×</button></div><div class="editor-body"><div class="editor-label">Editable Java 17 source</div><textarea id="source" spellcheck="false"></textarea><div class="editor-actions"><button id="run">Run</button><button id="reset">Reset</button><button id="copy">Copy</button></div><pre class="editor-output" id="editor-output">Run a program to see compiler output here.</pre></div></aside>
 </div>
 <script>
 const C=[

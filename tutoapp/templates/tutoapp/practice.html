@@ -5,9 +5,10 @@
   {% include "tutoapp/adsense-script.html" %}
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="google-adsense-account" content="ca-pub-6776941375498143">
-  <title>OWCUS Coding Practice</title>
-  {% include "tutoapp/seo_head.html" with seo_title="OWCUS Coding Practice" seo_description="Practise programming with guided coding challenges, constraints, examples, and submissions in the OWCUS coding practice workspace." %}
-  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261120-nav-refine">
+  <title>Coding Practice Problems with Online Solutions | OWCUS</title>
+  {% include "tutoapp/seo_head.html" with seo_title="Coding Practice Problems with Online Solutions | OWCUS" seo_description="Practise programming with guided coding challenges, constraints, examples, and feedback in the OWCUS coding practice workspace." %}
+  <link rel="stylesheet" href="{% static 'tutoapp/site-nav.css' %}?v=20261122-global-menu">
+  <link rel="stylesheet" href="{% static 'tutoapp/responsive-overrides.css' %}?v=20261122-global-menu">
   <link rel="stylesheet" href="{% static 'tutoapp/legal.css' %}">
   <link rel="stylesheet" href="{% static 'tutoapp/practice.css' %}">
   <link rel="stylesheet" href="{% static 'tutoapp/practice-buttons.css' %}?v=20261120-buttons">
@@ -15,7 +16,7 @@
 <body class="practice-page">
   <header class="landing-header practice-header"><a class="brand practice-brand" href="/" aria-label="OWCUS home"><img class="brand-logo" src="{% static 'tutoapp/images/owcus-logo.webp' %}" alt="OWCUS"></a>{% include "tutoapp/site_nav_clean.html" %}</header>
   <main class="practice-shell">
-    <section class="practice-hero"><p class="eyebrow">OWCUS Coding Practice</p><h1>Turn lessons into solved problems.</h1><p>Choose a challenge, read the constraints, write a solution, and submit it through the isolated runner.</p></section>
+    <section class="practice-hero"><p class="eyebrow">OWCUS Coding Practice</p><h1>Turn lessons into solved problems.</h1><p>Choose a challenge, read the constraints, write a solution, and submit it through the isolated runner.</p><p class="practice-intro">Practice is where concepts become dependable skills. Select a problem by difficulty or topic, study the input and output examples, and write a solution in the language you are learning. The workspace keeps the statement, constraints, editor, results, and hint together so you can iterate without losing context. Use small changes to test your reasoning, then review the result before moving to a harder challenge. These exercises are useful for interview preparation, classroom revision, and building fluency with everyday programming patterns. Never place passwords, API keys, or private customer data in code submitted to a learning tool.</p></section>
     <section class="practice-layout">
       <aside class="challenge-sidebar"><div class="filter-row"><label for="difficulty-filter">Difficulty</label><select id="difficulty-filter"><option value="all">All levels</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div><label for="topic-filter">Topic</label><select id="topic-filter"><option value="all">All topics</option></select><div id="challenge-list" class="challenge-list"></div></aside>
       <section class="challenge-workspace" id="interview">
@@ -26,7 +27,7 @@
         <textarea id="practice-editor" spellcheck="false" aria-label="Practice solution"></textarea>
         <div class="practice-result"><strong id="result-title">Result</strong><pre id="result-output">Run or submit your solution to see the result.</pre></div>
         <details class="hint-box"><summary>Hint</summary><p id="challenge-hint">Choose a challenge to see a hint.</p></details>
-        <p class="runner-note">Submissions are evaluated only when a Judge0-compatible isolated runner is configured with <code>JUDGE0_URL</code>. This page never executes arbitrary code inside the Django application process.</p>
+        <p class="runner-note">Submissions are evaluated through an isolated runner when available. Your solution is not executed inside the Django application process.</p>
       </section>
     </section>
   </main>

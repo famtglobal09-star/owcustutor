@@ -207,8 +207,8 @@ def practice_page(request):
 
 
 @ensure_csrf_cookie
-def resume_builder_page(request):
-    return render(request, 'tutoapp/resume_builder.html')
+def resume_builder_page(request, template_slug=''):
+    return render(request, 'tutoapp/resume_builder.html', {'builder_template_slug': template_slug})
 
 
 def resume_hub(request):
@@ -228,7 +228,7 @@ def resume_hub(request):
                 '@type': 'ListItem',
                 'position': index,
                 'name': f"{role['title']} Resume Example",
-                'url': f"https://www.owcus.com{reverse('resume_role', kwargs={'slug': role['slug']})}",
+                'item': f"https://www.owcus.com{reverse('resume_role', kwargs={'slug': role['slug']})}",
             }
             for index, role in enumerate(ROLE_CATALOG, start=1)
         ],
@@ -353,6 +353,7 @@ def resume_role(request, slug):
 def _resume_seo_paths():
     urls = [
         '/', '/about/', '/contact/', '/privacy/', '/terms/', '/resume/',
+        '/tutorials/', '/compiler/', '/practice/', '/java/', '/practical-skills/',
         '/interview-questions/', '/interview-questions/quiz/',
     ]
     urls += [f"/interview-questions/category/{category['slug']}/" for category in CATEGORIES]
@@ -402,7 +403,7 @@ def resume_segment_sitemap(request, segment):
 
 def robots_txt(request):
     return HttpResponse(
-        'User-agent: *\nAllow: /\nDisallow: /dashboard/\nDisallow: /admin/\nDisallow: /api/\nDisallow: /resume-builder/\nSitemap: https://www.owcus.com/sitemap.xml\n',
+        'User-agent: *\nAllow: /\nSitemap: https://www.owcus.com/sitemap.xml\n',
         content_type='text/plain',
     )
 
